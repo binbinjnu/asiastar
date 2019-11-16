@@ -1,0 +1,19 @@
+{application, asiastar,
+ [{description, "An OTP application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {asiastar_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    lager,
+    ranch,
+    mysql_poolboy,
+    erlcron
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.

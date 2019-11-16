@@ -1,0 +1,9 @@
+-name asiastar@127.0.0.1
++P 500000
++K true
++Q 131072
++e 14000
++zdbbl 8192
++scl false
++sub true
++t 10000000

@@ -1,0 +1,42 @@
+syntax = "proto3";
+package test;
+// base 599
+
+// 测试协议
+// 59901
+message c2s_test1 {
+    int32 iValue = 1;
+    string sValue = 2;
+    bytes bValue = 3;
+}
+
+// 测试协议
+// 59902
+message c2s_test2 {
+    int32 int_v = 1;
+    string string_v = 2;
+}
+
+message value {
+    int32 int_v = 1;
+}
+
+// 测试协议2
+// 59901
+message s2c_test1 {
+    int32 int_v = 1;
+    string string_v = 2;
+}
+
+// 测试协议2
+// 59902
+message s2c_test2 {
+    int32 int_v = 1;
+    string string_v = 2;
+}
+
+// // 59901
+// message c2s_same_test {
+//     int32 int_v = 1;
+//     string string_v = 2;
+// }

@@ -1,0 +1,4122 @@
+syntax = "proto3";
+package proto;
+
+// 通用协议
+
+
+// 斗地主游戏协议
+
+// 请求斗地主游戏房间
+message C3010001 {
+    int32 GameKindID = 1;           // 游戏类型
+}
+
+// 响应斗地主房间
+message S3010001 {
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        int32 MinEnterAmount = 3;
+        int64 MaxEnterAmount = 4;
+        string RoomName = 5;
+    }
+    repeated RoomInfo Rooms = 1;
+    int32 RetCode = 2;
+}
+
+// 进入房间
+message C3010002 {
+    int32 RoomID = 1;
+    int32 UserID = 2;
+}
+
+//响应进入房间消息
+message S3010002 {
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    int32 SeatNums = 5;
+    int32 StartTime = 6;
+}
+
+
+
+// 用户通知准备开始游戏
+message C3010003 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+}
+
+//响应用户通知准备开始游戏
+message S3010003 {
+    int32 RetCode = 1;
+    int32 UserID = 2;
+}
+
+
+// 获取桌台信息
+message C3010004 {
+    int32 TableID = 1;
+    int32 UserID = 2;
+}
+
+// 返回桌台信息
+message S3010004 {
+    message SeatInfo {
+        int32 TableID = 1;
+        int32 SeatNo = 2;
+        int32 FaceID = 3;
+        string UserName = 4;
+        double UserAmount = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    int32 UserID = 2;
+    repeated SeatInfo Seats = 3;
+}
+
+// 叫分
+message C3010005 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    int32 Score  = 3;         //分数 0 pass
+    int32 LastScore = 4;      //上次分数
+    string RoundName = 5;      //牌局号
+}
+
+// 返回
+message S3010005 {
+    int32 RetCode = 1;
+    int32 UserID = 2;
+}
+
+
+// 出牌
+message C3010006 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    bytes OutCards = 3;
+    int32 BPass    = 4;
+    string RoundName = 5;
+}
+
+// 返回
+message S3010006 {
+    int32 RetCode = 1;
+    int32 UserID = 2;
+}
+
+// 获取重入牌局
+message C3010007 {
+    int32 UserID = 1;
+    string RoundName = 2;
+    int32 RoomID = 3;
+    int32 TableID = 4;
+    int32 SeatNo = 5;
+}
+
+// 响应
+message S3010007 {
+    message Auto {
+        int32 SeatNo = 1;
+        int32 Type = 2; // 0 :托管 1：未托管
+    }
+    int32 RetCode = 1;
+    int32 UserID = 2;
+    int32 CurSeatNO = 3;    //当前操作的座位号
+    int32 CountDown = 4;    // 剩余时间
+    bytes HandCards = 5;    // 玩家手牌
+    int32 Status = 6;       // 当前状态 1:准备阶段 2：发牌阶段 3：叫分阶段 4:发庄牌 5:加倍阶段 6：出牌阶段 7:牌局结算阶段 8 正常结束 9 异常结束
+    int32 LastMaxScoreSeatNo = 7;  // 如果在叫分阶段 该值为当前叫分最大的玩家座位号
+    int32 BankNo = 8;  // 4 阶段后 显示庄家座位
+    int32 Score = 9;   // 当前分数
+    bytes BankerCards = 10;  // 庄牌
+    int32 OutTime = 11;          //出牌时间
+    int32 CallCoretime = 12;     //叫分时间
+    int32 HeadOutTime = 13;      //首出时间
+    int32 LastSeatNo = 14;       // 上次出牌玩家
+    bytes LastHandCards = 15;    // 上次出的牌
+    bytes RecordSign = 16;      // 记牌器
+    bytes LeftNums = 17;        // 剩余牌数
+    repeated Auto Autos = 18;   // 托管状态
+    int32 DoubleScore = 19;      //加倍值 0:未选择 1:不加倍 2:加倍
+}
+
+// 托管
+message C3010008 {
+    int32 UserID = 1;
+    int32 Type   = 2; // 0 :托管 1：取消托管
+    string RoundName = 3;
+}
+
+message S3010008 {
+    int32 RetCode = 1;
+}
+
+// 农民加倍
+message C3010009 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    int32 Double  = 3;         //1:不加倍 2:加倍
+    string RoundName = 4;      //牌局号
+}
+
+// 返回
+message S3010009 {
+    int32 RetCode = 1;
+}
+
+// 玩家离开
+message C3010010 {
+    int32 UserID = 1;
+}
+
+message S3010010 {
+    int32 RetCode = 1;
+}
+
+message P301000B {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 Type = 4;  // 0 :托管 1：取消托管
+}
+
+// 用户离开游戏
+message N3010002 {
+    int32 UserID = 1;
+}
+
+// 通知用户桌台离开
+message P301000A {
+    int32 TableID = 1;
+    int32 SeatNo  = 2;
+}
+
+
+// 服务端推送用户准备成功消息
+message P3010001 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+    int32 VipLevel = 7;
+    int32 FaceFrameID=8;
+}
+
+// 服务端推送游戏开始消息
+message P3010002 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 OutTime = 3;          //出牌时间
+    int32 CallCoretime = 4;     //叫分时间
+    int32 HeadOutTime = 5;      //首出时间
+}
+
+// 服务端发牌
+message P3010003 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    bytes HandCards = 4;         //手上的牌
+    int32 UserID = 5;
+}
+
+
+
+// 开始叫分
+message P3010004 {
+    int32 CallerSeatNo = 1;      //首次叫分桌位号
+    int32 LastCore = 2;          //上次叫的分数
+    string RoundName = 3;        //局号
+}
+
+// 推送叫分结果
+message P3010005 {
+    int32 SeatNo = 1;
+    int32 Score  = 2;
+    string RoundName = 3;        //局号
+}
+
+
+
+// 牌局庄家
+message P3010006 {
+    string RoundName = 1;          //局号
+    int32 BankerSeatNo = 2;        //庄家座位号
+    int32 Score = 3;               //叫分结果
+    bytes BankerCards = 4;         //庄家底牌
+}
+
+
+// 开始出牌
+message P3010007 {
+    string RoundName = 1;          //局号
+    int32 CurSeatNo = 2;           //当前出牌桌位号
+}
+
+// 牌局结束
+message P3010008 {
+    message UserSettle {
+        int32 SeatNo = 1;              //座位号
+        double BaseAmount = 2;         //底分
+        double Odds   = 3;            //赔率
+        double PayOff  = 4;            //派彩
+        int32  Bombs   = 5;            //bomb个数
+        int32  Spring  = 6;            //是否春天
+        double Wealth  = 7;            //剩余金额
+    }
+    message LeftInfo {
+        int32 SeatNo = 1;
+        bytes HandCards = 2;
+    }
+    int32  RoundEndType = 1;           //0:正常，非零异常结束
+    string RoundName = 2;               //局号
+    int32  WinerSeatNo = 3;             //赢家座位号
+    repeated UserSettle Users = 4;      //结算信息
+    repeated LeftInfo   Lefts = 5;      //剩余牌信息
+}
+
+
+// 推送用户出牌数据
+message P3010009 {
+    int32 SeatNo = 1;
+    bytes OutCards = 2;
+    int32 BPass    = 3;
+    string RoundName = 4;
+}
+
+// 通知农民开始加倍
+message P3010010 {
+    string RoundName = 1;          //局号
+    int32 SeatNo = 2;           //加倍座位号
+    int32 DoubleTime =3;  //加倍倒计时
+}
+
+//推送加倍结果
+message P3010011 {
+    string RoundName = 1;          //局号
+    int32 SeatNo = 2;           //加倍座位号
+    int32 Double = 3;
+}
+
+// 系统级别协议
+
+// 登录请求
+message C0000001 {
+    string AccountName = 1;
+    string Password = 2;
+    string MachineID = 3; //机器唯一标识码
+    int32 PlatFormID = 4; //平台ID
+    string IPAddr = 5;
+    int32 TerminalType = 6;  //1:IOS,2:Andriod 3:Other
+    string ClientVersion = 7;
+    int32 GameID = 8; //游戏ID
+    string Model = 9; //机型
+    string Version = 10; //系统版本
+}
+// 登录回应
+message S0000001 {
+    int32 RetCode = 1; //返回码
+    int32 UserID = 2; //id
+    int32 HeatTimes = 3; //心跳时间
+    string Token = 4; //刷新
+}
+
+// 获取游戏种类请求
+message C0000002 {
+    int32 UserID = 1; //用户ID
+    int32 PlatFormID = 2; //平台ID
+}
+
+// 获取游戏种类响应
+message S0000002 {
+    message KindType {
+        int32 KindID = 1; //种类ID
+        string KindName = 2; //种类名称
+        int32 Status = 3; //状态
+        int32 IconType = 4; //图标类型 0:隐藏 1：热 2：新
+    }
+    int32 RetCode = 1; //返回吗
+    repeated KindType KindTypes = 2; //种类列表
+    string Error = 3;
+}
+
+// 获取用户信息
+message C0000003 {
+    int32 UserID = 1; //用户ID
+}
+
+// 返回用户信息
+message S0000003 {
+    int32 RetCode = 1;
+    int32 UserID = 2;
+    string UserName = 3;
+    double Wealth = 4;
+    int32 FaceID = 5;
+    int32 Sexuality = 6;
+    string IPArea = 7;
+    int32 AccType = 8;
+    int32 Status = 9; //1：游戏中 下面字段生效
+    int32 KindID = 10;
+    int32 RoomID = 11;
+    int32 TableID = 12;
+    int32 SeatNo = 13;
+    string RoundName = 14;
+    int32 VipLevel = 15; //vip等级
+    int32 FaceFrameID=16;  //头像框ID
+}
+
+// 游客注册
+message C0000004 {
+    string MachineID = 1; //机器唯一标识码
+    int32 PlatFormID = 2; //平台ID
+    string IPAddr = 3;
+    string Sign   = 4;  //  MD5({MachineID:PlatFormID:IPAddr:key})
+    int32 GameID = 5; //游戏ID
+}
+
+message S0000004 {
+    int32 RetCode = 1;
+    string GuestName = 2; //游客账号
+    string GuestPassword = 3; //密码
+}
+
+// 账号绑定手机
+message C0000005 {
+    int32 UserID = 1;
+    string Mobile = 2;
+    string MobileAuthCode = 3;
+    string MachineID = 4;
+    int32 PlatFormID = 5;
+    string Password = 6;
+}
+
+message S0000005 {
+    int32 RetCode = 1;
+    string Token = 2;
+}
+
+// 账号注册
+message C0000006 {
+    string AccountName = 1;
+    string Mobile = 2;
+    string MobileAuthCode = 3;
+    string Password = 4;
+    int32 FaceID = 5;
+    int32 Sexuality = 6;
+    string MachineID = 7; //机器唯一标识码
+    int32 PlatFormID = 8; //平台ID
+    string IPAddr = 9;
+    int32 GameID = 10; //游戏ID
+}
+
+message S0000006 {
+    int32 RetCode = 1; //返回码
+    int32 UserID = 2; //id
+}
+
+// 账户绑定支付宝
+message C0000007 {
+    int32 UserID = 1;
+    string AlipayAccount = 2;
+    string AliPayNickName = 3;
+}
+
+message S0000007 {
+    int32 RetCode = 1;
+}
+
+// 账户绑定银行卡
+message C0000008 {
+    int32 UserID = 1;
+    string BankAccount = 2;
+    string BankCardNo = 3;
+    string Mobile = 4;
+    string BankCode = 5;
+}
+
+message S0000008 {
+    int32 RetCode = 1;
+}
+
+// 更新头像和性别
+message C0000009 {
+    int32 UserID = 1;
+    int32 FaceID = 2;
+    int32 Sexuality = 3;
+    int32 FaceFrameID=4; //相框ID
+}
+
+message S0000009 {
+    int32 RetCode = 1;
+}
+
+// 登出
+message C000000A {
+    int32 UserID = 1;
+}
+
+message S000000A {
+    int32 RetCode = 1;
+}
+
+// 保险箱存取
+message C0000011 {
+    int32 UserID = 1;
+    double Amount = 2;
+    int32 OpType = 3; //1：存 2：取
+    string Password = 4;
+}
+
+message S0000011 {
+    int32 RetCode = 1;
+    double CoinWealth = 2;
+    double BankWealth = 3;
+}
+
+// 变更用户昵称
+message C0000012 {
+    int32 UserID = 1;
+    string NickName = 2;
+}
+
+message S0000012 {
+    int32 RetCode = 1;
+}
+
+// 兑换
+message C0000013 {
+    int32 UserID = 1;
+    int32 Device = 2; //1:IOS,2:Andriod
+    double Amount = 3;
+    int32 ExchangeType = 4; //0:支付宝 1:银行卡
+    string Account = 5;
+    string AccName = 6;
+    string MachineID = 7;
+    string UserIP    = 8;
+    string BankCode  = 9;
+    string Telephone = 10;
+}
+
+message S0000013 {
+    int32 RetCode = 1;
+    double Wealth = 2;
+}
+
+// 代充列表
+message C0000014 {
+    int32 UserID = 1;
+}
+
+message S0000014 {
+    message AgentInfo {
+        string AgentName = 1;
+        string QQ = 2;
+        string WebChat = 3;
+    }
+    int32 RetCode = 1;
+    repeated AgentInfo Agents = 2;
+}
+
+// 手机登陆
+message C0000015 {
+    string MobileName = 1;
+    string MobileAuthCode = 2;
+    string MachineID = 3; //机器唯一标识码
+    int32 PlatFormID = 4; //平台ID
+    string IPAddr = 5;
+    int32 TerminalType = 6;  //1:IOS,2:Andriod 3:Other
+    string ClientVersion = 7;
+    int32 GameID = 8; //游戏ID
+}
+
+message S0000015 {
+    int32 RetCode = 1; //返回码
+    int32 UserID = 2; //id
+    int32 HeatTimes = 3; //心跳时间
+    string Token = 4;
+}
+
+// 获取验证码
+message C0000016 {
+    string MobileName = 1;
+    string MachineID = 2; //机器唯一标识码
+    int32 PlatFormID = 3; //平台ID
+    string IPAddr = 4;
+}
+
+message S0000016 {
+    int32 RetCode = 1;
+    int32 ExpireTime = 2;
+}
+
+// 查询用户财富信息
+message C0000017 {
+    int32 UserID = 1;
+}
+
+message S0000017 {
+    int32 RetCode = 1;
+    double CoinWealth = 2;
+    double BankWealth = 3;
+    int32 BSetBankPassword = 4; //0:不需要设置 1：需要设置
+}
+
+// Token 登陆
+message C0000018 {
+    string AccountName = 1;
+    string Token = 2;
+    string MachineID = 3; //机器唯一标识码
+    int32 PlatFormID = 4; //平台ID
+    string IPAddr = 5;
+    int32 TerminalType = 6;  //1:IOS,2:Andriod 3:Other
+    string ClientVersion = 7;
+    int32 GameID = 8; //游戏ID
+    string Model = 9; //机型
+    string Version = 10; //系统版本
+}
+
+message S0000018 {
+    int32 RetCode = 1; //返回码
+    int32 UserID = 2; //id
+    int32 HeatTimes = 3; //心跳时间
+    string Token = 4; //刷新
+}
+
+// 检查账号有效性
+message C0000019 {
+    string Mobile = 1;
+    int32 PlatFormID = 2;
+    int32 GameID = 3;
+}
+
+message S0000019 {
+    int32 RetCode = 1;
+}
+
+// 重置密码
+message C0000020 {
+    string Mobile = 1;
+    string MobileAuthCode = 2;
+    string MachineID = 3;
+    int32 PlatFormID = 4;
+    string Password = 5;
+    int32 GameID = 6;
+}
+
+message S0000020 {
+    int32 RetCode = 1;
+}
+
+// 用户支付信息
+message C0000021 {
+    int32 UserID = 1;
+}
+
+message S0000021 {
+    int32 RetCode = 1;
+    string AlipayAccount = 2;
+    string AliPayNickName = 3;
+    string BankAccount = 4;
+    string BankCardNo = 5;
+    string BankCode   = 6;
+}
+
+// 设置保险箱密码
+message C0000022 {
+    int32 UserID = 1;
+    string Password = 2;
+}
+
+message S0000022 {
+    int32 RetCode = 1;
+}
+
+// 重置保险箱密码
+message C0000023 {
+    int32 UserID = 1;
+    string Password = 2;
+    string Mobile = 3;
+    string MobileAuthCode = 4;
+}
+
+message S0000023 {
+    int32 RetCode = 1;
+}
+
+// 获取邮件列表
+message C0000025 {
+    int32 UserID = 1; //用户ID
+}
+
+message S0000025 {
+    message MailModel {
+        int64 MailId = 1;
+        int32 Type = 2; //'兑换申请:0,兑换成功:1,兑换失败:2,绑定成功:3'
+        int64 CreateTime = 3;
+        int32 MailStatus = 4; //'未读:0,已读:1'
+        double Amount = 5;
+        int32 AmountStatus = 6; //0:未领取 1:已领取
+    }
+    int32 RetCode = 1;
+    repeated MailModel Mails = 2;
+}
+
+// 查看邮件明细
+message C0000026 {
+    int32 UserID = 1;
+    int64 MailId = 2;
+}
+
+message S0000026 {
+    int32 RetCode = 1;
+    string Title = 2;
+    string Context = 3;
+    double Amount = 4;
+    int32 AmountStatus = 5; //0:未领取 1:已领取
+}
+
+//每天兑换限额
+message C0000027 {
+    int32 UserID = 1;
+}
+message S0000027 {
+    int32 RetCode = 1;
+    int32 LimitCount = 2; //支付宝每天次数限制
+    int32 LeftCount = 3; //支付宝剩余次数
+    double LimitAmount = 4; //支付宝金额限制
+    double LeftAmount = 5; //支付宝剩余额度
+    repeated int32 ExchangeType=6;//兑换方式列表  0:支付宝 1:银行卡
+    int32 BankCardLimitCount = 7; //银行卡每天提现次数
+    int32 BankCardLeftCount = 8; //银行卡每天剩余提现次数
+    double BankCardLimitAmount = 9; //银行卡每天金额限制(暂未使用)
+    double BankCardLeftAmount = 10; //银行卡每天剩余额度(暂未使用)
+}
+
+//找回账号
+message C0000028 {
+    string MachineID = 1; //机器唯一标识码
+    string Sign = 2;
+    int32 GameID = 3;
+}
+message S0000028 {
+    int32 RetCode = 1;
+    repeated string Mobiles = 2;
+    string GestName = 3;
+    repeated string Uids = 4;
+    string GestUid = 5;
+}
+
+// 获取兑换记录
+message C0000029 {
+    int32 UserID = 1;
+    string MachineID = 2;
+}
+
+message S0000029 {
+    message Exchange {
+        string ApplyTime = 1;
+        string ExchangeType = 2;
+        double ExchangeAmount = 3;
+        string Status = 4;
+    }
+    int32 RetCode = 1;
+    repeated Exchange ExchangeList = 2;
+}
+
+// 获取VIP等级
+message C0000030 {
+    int32 UserID = 1;
+}
+
+message S0000030 {
+    int32 RetCode = 1;
+    int32 VipLevel = 2;
+    double VipValue=3;  //当前玩家充值金额
+    int32 FaceFrameID=4;  //头像框ID
+}
+
+// 获取服务器维护状态
+message C0000031 {
+}
+
+message S0000031 {
+    int32 RetCode = 1;
+    int32 ServerState = 2; //1:停服 2:测试 3:开服
+    int64 ServerStopTime = 3;//停服维护时间
+}
+
+//查询是否白名单
+message C0000032 {
+    string MachineID = 1; //机器唯一标识码
+}
+
+message S0000032 {
+    int32 RetCode = 1;
+    int32 Status =2; //白名单状态 0:普通用户 1:白名单用户
+}
+
+//领取邮件金币
+message C0000033 {
+    int32 UserID = 1;
+    int64 MailId = 2;
+}
+
+message S0000033 {
+    int32 RetCode = 1;
+    double Wealth = 2;
+}
+
+//盈利榜
+message C0000035 {
+    int32 UserID = 1;
+}
+
+message S0000035 {
+    message TopProfit {
+        int32 TopN=1; //排名 不管上不上榜 最后一个为自己 值为0代表未上榜
+        string NickName=2;
+        double Amount=3;
+    }
+    int32 RetCode = 1;
+    repeated TopProfit TopProfits = 2;
+}
+
+//幸运榜
+message C0000036 {
+    int32 UserID = 1;
+}
+
+message S0000036 {
+    message TopLucky {
+        int32 TopN=1; //排名 不管上不上榜 最后一个为自己 值为0代表未上榜
+        string NickName = 2;
+        double Amount=3;
+        int32 KindID = 4;
+        int32 LuckyTime = 5;
+    }
+    int32 RetCode = 1;
+    repeated TopLucky TopLuckys = 2;
+}
+
+
+//等级配置
+message C0000037 {
+}
+
+message S0000037 {
+    message VIPConfig{
+        int32 VipLvl=1;
+        double VipValue =4; //充值金额
+        repeated int32 FaceFrameids=5; //头像框ID
+    }
+    int32 RetCode = 1;
+    repeated VIPConfig Configs=2;
+}
+
+// 获取投注记录
+message C0000038 {
+    int32 UserID = 1;
+    int32 KindID = 2; // 游戏类型
+    int32 Days   = 3; // 多少天内
+    int32 PageIndex = 4;
+    int32 Nums   = 5;
+}
+
+message S0000038 {
+    message RecordRound {
+        int64 SettleTime = 1;
+        int32 RoomID   = 2;
+        string RoundName = 3;
+        string Play   =4;
+        string BetAmount = 5;
+        string RoundResult = 6;
+        double PayOff  = 7;
+    }
+    int32 RetCode = 1;
+    repeated RecordRound Records = 2;
+    int32 KindID = 3;
+    int32 Days = 4;
+    int32 TotalNums = 5;
+    double TotalBets = 6;
+    double ToTalPayoff = 7;
+}
+
+message C0000039 {
+}
+
+message S0000039 {
+    int32 RetCode = 1;
+    double Jackpot = 2;
+}
+
+
+// 用户入座
+message N0000001 {
+    int32 UserID = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+}
+
+// 用户离座
+message N0000002 {
+    int32 UserID = 1;
+}
+
+// 开始牌局
+message N0000003 {
+    int32 TableID = 1;
+    string RoundName = 2;
+}
+
+// 结束牌局
+message N0000004 {
+    string RoundName = 1;
+}
+
+// 用户离线
+message N0000005 {
+    int32 UserID = 1;
+}
+
+// 开始ox5游戏
+message N0000006 {
+    int32 UserID = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+}
+
+message N0000007 {
+    int32 UserID = 1;
+}
+
+//手机信息
+message N0000008 {
+    string MachineCode = 1;
+    string Manufacturer = 2; //厂商
+    string PhoneModel = 3; //型号
+    string Resolution = 4; //分辨率
+    string SystemVersion = 5;
+    string ClientVersion = 6;
+    string PhoneCode = 7; //手机内部型号
+    string InsideIp = 8; //内网Ip
+}
+
+// 跑马灯推送
+message P0000001 {
+    string UserName = 1;
+    int32 KindID = 2;
+    double Amount = 3;
+    string CardType = 4;
+    repeated int32 GameIDs = 5; //游戏平台
+    int32 VipLevel = 6;
+}
+
+// 推送有新邮件邮件消息
+message P0000002 {
+    int32 UserID = 1;
+}
+
+// 推送vip等级
+message P0000003 {
+    int32 UserID = 1;
+    int32 VipLevel = 2;
+}
+
+//客户端操作日志
+message N0000009 {
+    int32 UserID = 1; //用户ID
+    int32 OperIndex = 2; //操作索引
+}
+
+//gate启动后扫描需要推送的邮件通知
+message N0000010 {
+    int32 UserID = 1; //用户ID
+}
+
+// 进入
+message C8030001 {
+    int32 Id = 1; // 玩家ID
+    int32 PlatformId = 2;
+    string Name = 3; // 玩家名
+    int32 Avatar = 4;
+}
+
+message S8030001 {
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+}
+
+// 信息列表
+message C8030002 {
+}
+
+message S8030002 {
+    message Message {
+        int32 Id = 1; // 对话ID
+        string Name = 2; // 代理名
+        int32 Avatar = 3; // 头像
+        string Context = 4; // 内容
+        int32 Type = 5; // 0 普通 1 图片 充值 11支付宝 12 微信 13银行转账 14花呗 15信用卡
+        int64 Time = 6;
+        int32 AgencyId = 7;
+        bool UnRead = 8; // 未读
+    }
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    repeated Message MsgList = 3;
+}
+
+// 详情
+message C8030003 {
+    int32 Id = 1; // 对话ID
+}
+
+message S8030003 {
+    message Message {
+        string Context = 1;
+        int32 Type = 2;
+        int64 Time = 3;
+        bool Player = 4;
+        int32 Id = 5; // message id
+    }
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    int32 Id = 3; //对话ID
+    int32 AgencyId = 4; //代理ID
+    int32 Avatar = 5; // 头像
+    repeated Message MsgList = 6;
+    repeated string TipList = 7; // 快捷用语
+    string Name = 8; // 代理名
+}
+
+// 获取对话ID
+message C8030004 {
+    int32 Id = 1; // 代理ID
+}
+
+message S8030004 {
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    int32 Id = 3; // 对话ID
+    string Name = 4; // 代理名
+    int32 Avatar = 5; // 头像
+    string Context = 6; // 内容
+    int32 Type = 7; // 0 普通 1 图片 充值 11支付宝 12 微信 13银行转账 14花呗 15信用卡
+    int64 Time = 8;
+    int32 AgencyId = 9;
+    bool UnRead = 10; // 未读
+}
+
+// 说话
+message C8030005 {
+    int32 Id = 1; // 对话ID
+    int32 SendId = 2; // 发送ID
+    string Context = 3;
+    int32 Type = 4; // 0 普通 1图片
+}
+
+message S8030005 {
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    int32 MessageId = 3;
+    int32 SendId = 4;
+    int64 Time = 5;
+    int32 SessionId = 6; // 对话ID
+}
+
+// 充值详情
+message C8030006 {
+    int32 Id = 1; // 代理ID
+    int32 Type = 2; // 充值类型
+}
+
+message S8030006 {
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    string Context = 3; // json
+    int32 Id = 4; // 代理ID
+    int32 Type = 5; // 充值类型
+}
+
+// 获取专员列表
+message C8030007 {
+}
+
+message S8030007 {
+    message Agency {
+        int32 Id = 1;
+        string Name = 2;
+        int32 Avatar = 3;
+        repeated int32 PayType = 4; // 支持的支付类型
+    }
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    repeated Agency List = 3;
+}
+
+// 将对话设为已读
+message C8030008 {
+    int32 Id = 1; // 对话ID
+}
+
+message S8030008 {
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    int32 Id = 3;
+}
+
+// 收到回复
+message P8030001 {
+    int32 Id = 1; //对话ID
+    string Context = 4;
+    int32 Type = 5;
+    int64 Time = 6;
+    int32 MessageId = 7; // message id
+}
+// 获取活动列表
+message C5000001 {
+    int32 RetCode = 1;
+    int32 GameID = 2;
+}
+
+//Type:
+//1 连赢活动
+message S5000001 {
+    message ActivityInfo {
+        int32 Id = 1;   //活动编号
+        int32 Type = 2;   //活动类型
+        int32 GameKindID = 3;   //游戏种类
+        repeated int32 RoomId = 4; //活动房间编号
+        string Name = 5;    //活动名
+        string Time = 6;    //活动时间
+        string Describe = 7; //活动描述
+        bool Running = 8; //活动是否正在进行
+    }
+    repeated ActivityInfo Activitys = 1;
+    int32 RetCode = 2;
+    int32 GameID = 3;
+}
+
+//活动开始
+message P5000001 {
+    int32 Id = 1;   //活动编号
+    int32 Type = 2;   //活动类型
+    int32 GameKindID = 3;   //游戏种类
+    repeated int32 RoomId = 4; //活动房间编号
+    string Name = 5;    //活动名
+    string Time = 6;    //活动时间
+    string Describe = 7; //活动描述
+    bool Running = 8; //活动是否正在进行
+    int32 GameID = 9;
+}
+
+//活动结束
+message P5000002 {
+    int32 Id = 1;
+    int32 GameID = 2;
+}
+
+
+//连赢活动
+
+//获取连赢列表
+message C5010001 {
+    int32 UserID = 1;
+    int32 ActivityID = 2;
+}
+
+message S5010001 {
+    message Winner {
+        int32 Rank = 1;     //排名
+        string Name = 2;    //玩家昵称
+        int32 Times = 3;    //连赢次数
+        double Payoff = 4; //赢取金币
+        int32 UserID = 5;
+    }
+    repeated Winner Winners = 1;
+    int32 UserWinTimes = 2; //用户当前连赢次数
+    double UserPayoff = 3; //用户当前连赢金币
+    int32 HisUserWinTimes = 4; //用户历史最高连赢次数
+    double HisUserPayoff = 5; //用户历史最高连赢金币
+    int32 ActivityID = 6;
+    int32 RetCode = 7;
+    int32 BasePayoff = 8; //连赢基数,需下注基数及以上金币，才计算连赢
+}
+
+// 获取公告列表
+message C1000001 {
+    int32 GameID = 1;
+}
+
+message S1000001 {
+    message Notice {
+        int32 ID = 1;
+        int32 Type = 2;
+        string Title = 3;
+        string Context = 4;
+        int64 BeginTime = 5;
+        int64 EndTime = 6;
+        int32 DeviceType = 7;
+    }
+    int32 RetCode = 1;
+    repeated Notice Notices =2;
+}
+
+// 获取跑马灯
+message C1000002 {
+    int32 UserID = 1;
+}
+
+message S1000002 {
+    message Scorller {
+        int32 ID = 1;
+        int32 Status = 2;
+        int32 Loops = 3;
+        string Context = 4;
+        int64 BeginTime = 5;
+        int64 EndTime = 6;
+        int32 DeviceType = 7;
+    }
+    int32 RetCode = 1;
+    repeated Scorller Scorllers = 2;
+}
+
+// 获取支付渠道
+message C1000003 {
+    int32 UserID = 1;
+}
+
+message S1000003 {
+    message Channel {
+        int32 Type = 1;    //0 Vip 1 支付宝 2 微信 3 QQ 4 银行卡 5 京东 6 PC 100 易充纵游卡 101 移动话费卡 102 电信话费卡 103 联通话费卡
+        string Value = 2;  // 49,99
+        int32 Ok = 3;      // 1:打开 2：关闭
+    }
+    int32 RetCode = 1;
+    repeated Channel Channels = 2;
+}
+
+// 获取全局开关
+message C1000004 {
+    int32 UserID = 1;
+    string IP = 2;
+}
+
+message S1000004 {
+    int32 RetCode = 1;
+    int32 PayType = 2;
+    int32 ExchangeType = 3;
+    string Website = 4;
+    string Gamesite = 5;
+    string Updatesite = 6;
+}
+
+// 支付开关
+message P1000001 {
+    int32 Type = 1; // 0:运营 1：审核
+}
+
+// 兑换开关
+message P1000002 {
+    int32 Type = 1;  // 0:支付宝 1：银行卡
+}
+
+// 公告推送
+message P1000004 {
+    int32 ID = 1;
+    int32 OpType = 2; // 0：增 1:删 2：改
+    int32 Type = 3; // 0: 常规 1：维护
+    string Title = 4;
+    string Context = 5;
+    int64 BeginTime = 6;
+    int64 EndTime = 7;
+    int32 DeviceType = 8; // 0：全部 1:ios 2:android
+    int32 GameID = 9;
+}
+
+// 跑马灯
+message P1000005 {
+    int32 ID = 1;
+    int32 OpType = 2; // 0：增 1:删 2：改
+    int32 Status = 3;
+    int32 Loops = 4;
+    string Context = 5;
+    int64 BeginTime = 6;
+    int64 EndTime = 7;
+    int32 DeviceType = 8; // 0：全部 1:ios 2:android
+    int32 GameID = 9;
+}
+
+// 后台充值
+message P1000006 {
+    int32 UserID = 1;
+    double BankAmount = 2;
+}
+
+// 解除绑定支付宝 或者 支付宝
+message P1000007 {
+    int32 UserID = 1;
+    int32 Type = 2;
+}
+
+// 踢玩家下线
+message P1000008 {
+    int32 UserID = 1;
+    int32 Type = 2;   // 0:被系统踢出 1：异机登陆
+}
+
+// 服务状态变更
+message P1000009 {
+    int32 Status = 1;  // 1:停服
+}
+
+//设置停服时间
+message P1000010 {
+    int64 ServerStopTime = 1;
+}
+
+// 苹果充值
+message C0000024 {
+    int32 UserID = 1;
+    string Receipt = 2;
+    string ProductID = 3;
+    int32 IsSandBox = 4; // 0:正式 1：沙盒
+}
+
+message S0000024 {
+    int32 RetCode = 1;
+    double CoinWealth = 2;
+}
+// 请求房间
+message C3100001 {
+    int32 GameKindID = 1;
+}
+
+message S3100001 {
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        int32 MinEnterAmount = 3;
+        int64 MaxEnterAmount = 4;
+        string RoomName = 5;
+    }
+    repeated RoomInfo Rooms = 1;
+    int32 RetCode = 2;
+}
+
+// 进入房间
+message C3100002 {
+    int32 RoomID = 1;
+    int32 UserID = 2;
+    int32 TableId = 3;
+}
+
+message S3100002 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+
+    message History {
+        int32 Result = 1; // 0.庄赢 1.闲赢 2.和
+        int32 Edge = 2; //0.无对子 1.庄对子 2.闲对子 3.庄闲皆对子
+    }
+
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    string UserName = 5;
+    double UserAmount = 6;
+    int32 FaceID = 7;
+    repeated SeatInfo Seats = 8;
+    repeated double AreaAmounts = 9; //各下注区总额
+    repeated double BetAmounts = 10; //此用户下注额
+    int32 Status = 11;      // 1.局開始 2 开始下注 3 停止下注 4 开始发牌 5 开始结算 6牌局結束
+    int32 LeftBetTime = 12; // status 1 时该字段有效
+    string RoundName = 13;
+    repeated History Historys = 14;  // 历史牌局概要
+    int32 Rounds = 15; // 换靴局数
+    int32 WatchStatus = 16; //0:默认 1:围观
+}
+
+// 下注
+message C3100003 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4; //0.庄 1.闲 2.和 3.庄对子 4.闲对子
+}
+
+message S3100003 {
+    int32 RetCode = 1;
+}
+
+// 历史记录
+message C3100004 {
+    int32 UserID = 1;
+
+}
+
+message S3100004 {
+    message History {
+        int32 Result = 1; // 0.庄赢 1.闲赢
+        int32 Edge = 2; //0.无对子 1.庄对子 2.闲对子 3.庄闲皆对子
+    }
+    int32 RetCode = 1;
+    repeated History Historys = 2;   //0.庄 1.闲 2.和 3.庄对子 4.闲对子
+}
+
+// 获取入座列表
+message C3100005 {
+    int32 UserID = 1;
+}
+
+message S3100005 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+// 获取旁观列表
+message C3100006 {
+    int32 UserID = 1;
+    repeated int32 Seats = 2;
+}
+
+message S3100006 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+    }
+    int32 RetCode = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+//玩家列表
+message C3100007 {
+    int32 UserID = 1;
+}
+
+message S3100007 {
+    message PlayerInfo {
+        int32 FaceID = 1;
+        string UserName = 2;
+        double UserAmount = 3;
+        double BetAmount = 4;
+        int32 WinCount = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    repeated PlayerInfo Players = 2;
+}
+
+// 离开
+message N3100001 {
+    int32 UserID = 1;
+}
+
+// 玩家进入房间
+message P3100001 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+    string Location = 7;
+    int32 VipLevel = 8;
+    int32 FaceFrameID=9;
+}
+
+// 开局
+message P3100002 {
+    string RoundName = 1;
+    int32  AniTime   = 2;
+    int32  TableID   = 3;
+}
+
+// 开始下注
+message P3100003 {
+    string RoundName = 1;
+    int32  BetTime   = 2;
+    int32  TableID   = 3;
+}
+
+// 停止下注
+message P3100004 {
+    string RoundName = 1;
+    int32  TableID   = 2;
+}
+
+// 开始发牌
+message P3100005 {
+    message HandCard {
+        int32 HandCards = 1;
+        int32 HandID   = 2; //0:庄 1:闲
+    }
+    string RoundName = 1;
+    int32  TableID   = 2;
+    int32  DealCardTime = 3;
+    repeated HandCard HandCards = 4;
+    repeated int32 WinArea = 5; //0.庄 1.闲 2.和 3.庄对子 4.闲对子
+}
+
+// 牌局结束
+message P3100006 {
+    message UserSettle {
+        int32 UserID = 1;
+        int32 SeatNo = 2;
+        double Payoff = 3;
+        double Wealth = 4;
+    }
+    int32  RoundEndType = 1;           //0:正常，非零异常结束
+    string RoundName = 2;               //局号
+    repeated UserSettle UserSettles = 3;
+    int32  TableID = 4;
+}
+
+// 用户离开
+message P3100007 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+    int32 TableID = 4;
+}
+
+// 用户下注信息
+message P3100008 {
+    string RoundName = 1;
+    int32  SeatNo    = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4;
+    repeated double AreaAmounts = 5;
+    int32 TableID = 6;
+}
+
+// 踢用户到大厅
+message P3100009 {
+    int32 UserID = 1;
+    int32 LimitRounds = 2;
+}
+
+// 提前通知踢到大厅
+message P3100010 {
+    int32 UserID = 1;
+    int32 LimitRounds = 2;
+    int32 LeftRounds=3;
+}// 请求房间
+message C3070001 {
+    int32 GameKindID = 1;
+}
+
+message S3070001 {
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        int32 MinEnterAmount = 3;
+        int64 MaxEnterAmount = 4;
+        string RoomName = 5;
+    }
+    int32 RetCode = 1;
+    repeated RoomInfo Rooms = 2;
+}
+
+// 进入房间
+message C3070002 {
+    int32 RoomID = 1;
+    int32 UserID = 2;
+    int32 TableId = 3;
+}
+
+message S3070002 {
+    message BankerInfo {
+        int32 UserID = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        int32 LeftRound = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    repeated SeatInfo Seats = 5;
+    repeated double AreaAmounts = 6;
+    repeated double BetAmounts = 7;
+    BankerInfo Banker = 8;
+    string UserName = 9;
+    double UserAmount = 10;
+    int32 FaceID = 11;
+    int32 Status = 12; //1 牌局开始 2 开始下注 3 停止下注 4 开始发牌 5 开始结算 6 牌局结束
+    int32 LeftBetTime = 13; // status 1 时该字段有效
+    string RoundName = 14;
+    int32 BankerAmount = 15;
+    double AreaLimit = 16;
+}
+
+// 下注
+message C3070003 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4;
+}
+
+message S3070003 {
+    int32 RetCode = 1;
+}
+
+// 走势
+message C3070004 {
+    int32 UserID = 1;
+}
+
+// 常量
+// 0小大众，1小宝马，2小奔驰，3小保时捷，4大大众，5大宝马，6大奔驰，7大保时捷
+message S3070004 {
+    int32 RetCode = 1;
+    repeated int32 Historys = 2; //最近10局游戏记录
+    repeated int32 Percent = 3; //最近100局  第1位小大众-7大保时捷
+}
+
+// 获取旁观列表
+message C3070005 {
+    int32 UserID = 1;
+    repeated int32 Seats = 2;
+}
+
+message S3070005 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+    }
+    int32 RetCode = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+// 申请上庄
+message C3070006 {
+    int32 UserID = 1;
+}
+
+message S3070006 {
+    int32 RetCode = 1;
+}
+
+// 获取上庄列表
+message C3070007 {
+    int32 UserID = 1;
+}
+
+message S3070007 {
+    message Banker {
+        string BankerName = 1;
+        int32 FaceID = 2;
+    }
+    int32 RetCode = 1;
+    repeated Banker Bankers = 2;
+}
+
+// 申请下庄
+message C3070008 {
+    int32 UserID = 1;
+}
+
+message S3070008 {
+    int32 RetCode = 1;
+}
+
+//玩家列表
+message C3070009 {
+    int32 UserID = 1;
+}
+
+message S3070009 {
+    message PlayerInfo {
+        int32 FaceID = 1;
+        string UserName = 2;
+        double UserAmount = 3;
+        double BetAmount = 4;
+        int32 WinCount = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    repeated PlayerInfo Players = 2;
+}
+
+// 离开
+message N3070001 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+}
+
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+// 玩家进入消息
+message P3070001 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+    string Location = 7;
+    int32 VipLevel = 8;
+    int32 FaceFrameID=9;
+}
+
+// 开始下注
+message P3070002 {
+    string RoundName = 1;
+    int32 BetTime = 2;
+    int32 TableID = 3;
+}
+
+// 停止下注
+message P3070003 {
+    string RoundName = 1;
+    int32 TableID = 2;
+}
+
+// 下注信息
+message P3070004 {
+    string RoundName = 1;
+    int32 SeatNo = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4;
+    repeated double AreaAmounts = 5;
+}
+
+// 动画时间
+message P3070005 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 DealCardTime = 3;
+    int32 Type = 4; //0-7 大众-保时捷
+    int32 Order = 5; //0-3 桌子上哪个位置
+}
+
+// 结算消息
+message P3070006 {
+    message UserSettle {
+        int32 UserID = 1;
+        int32 SeatNo = 2;
+        double Payoff = 3;
+        double Wealth = 4;
+    }
+    int32 RoundEndType = 1; //0:正常，非零异常结束
+    string RoundName = 2; //局号
+    repeated UserSettle UserSettles = 3;
+    UserSettle Banker = 4;
+}
+
+// 用户离开
+message P3070007 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+    int32 TableID = 4;
+}
+
+// 庄家信息
+message P3070008 {
+    int32 UserID = 1;
+    int32 FaceID = 2;
+    string UserName = 3;
+    double UserAmount = 4;
+    int32 LeftRound = 5;
+    string RoundName = 6;
+    int32 TableID = 7;
+    int32 SeatNo = 8;
+}
+
+// 上桌玩家信息
+message P3070009 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 TableID = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+//踢用户到大厅
+message P307000B {
+    int32 UserID = 1;
+    int32 LimitRounds=2;
+}
+
+// 提前通知提到大厅
+message P307000C {
+    int32 UserID = 1;
+    int32 LimitRounds=2;
+    int32 LeftRounds=3;
+}//审核状态
+// 要和football的审核状态一致，所以使用107
+message C1070007 {
+    int32 GameID = 1;
+    string IPAddr = 2;
+}
+
+message S1070007 {
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    int32 AuditStatus = 3;
+    string Website = 4;
+    string Gamesite = 5;
+    string Updatesite = 6;
+}
+// 进入
+message C8010001 {
+    int32 Id = 1;
+    int32 PlatformId = 2;
+}
+
+message S8010001 {
+    message Message {
+        int32 Id = 1; // 消息id
+        int32 Uid = 2; //来自玩家是玩家id，客服是客服id
+        bool Player = 3; // 是否来自玩家
+        int64 Time = 4;
+        string Text = 5;
+        int32 Type = 6; // 0普通，1图片
+    }
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    repeated Message MsgList = 3;
+}
+
+// 发送
+message C8010002 {
+    string Text = 1;
+    int32 Type = 2;
+}
+
+message S8010002 {
+    int32 RetCode = 1;
+    string ErrorMsg = 2;
+    int64 Time = 3;
+}
+
+// 离开
+message N8010001 {
+}
+
+// 收到回复
+message P8010001 {
+    int32 Id = 1;
+    int32 Uid = 2; // 客服ID
+    string Text = 3;
+    int64 Time = 4;
+    int32 Type = 5;
+}
+
+// 收到撤回
+message P8010002 {
+    int32 MessageId = 1;
+}// 请求房间
+message C3060001 {
+    int32 GameKindID = 1;
+}
+
+message S3060001 {
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        int32 MinEnterAmount = 3;
+        int64 MaxEnterAmount = 4;
+        string RoomName = 5;
+    }
+    repeated RoomInfo Rooms = 1;
+    int32 RetCode = 2;
+}
+
+// 进入房间
+message C3060002 {
+    int32 RoomID = 1;
+    int32 UserID = 2;
+    int32 TableId = 3;
+}
+
+message S3060002 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    string UserName = 5;
+    double UserAmount = 6;
+    int32 FaceID = 7;
+    repeated SeatInfo Seats = 8;
+    repeated double AreaAmounts = 9;
+    repeated double BetAmounts = 10;
+    int32 Status = 11; // 1 牌局开始 2 开始下注 3 停止下注 4 开始发牌 5 开始结算 6 牌局结束
+    int32 LeftBetTime = 12; // status 1 时该字段有效
+    string RoundName = 13;
+    bytes Historys = 14; // 历史牌局概要 0：龙 1：虎 2：和
+    int32 Rounds = 15; // 换靴局数
+    int32 WatchStatus = 16; //0:默认 1:围观
+}
+
+// 下注
+message C3060003 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4; // 0：龙 1：虎 2：和
+}
+
+message S3060003 {
+    int32 RetCode = 1;
+}
+
+// 历史记录
+message C3060004 {
+    int32 UserID = 1;
+}
+
+message S3060004 {
+    int32 RetCode = 1;
+    bytes Historys = 2;
+}
+
+// 获取入座列表
+message C3060005 {
+    int32 UserID = 1;
+}
+
+message S3060005 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+// 获取旁注列表
+message C3060006 {
+    int32 UserID = 1;
+    repeated int32 Seats = 2;
+}
+
+message S3060006 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+    }
+    int32 RetCode = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+//玩家列表
+message C3060007 {
+    int32 UserID = 1;
+}
+
+message S3060007 {
+    message PlayerInfo {
+        int32 FaceID = 1;
+        string UserName = 2;
+        double UserAmount = 3;
+        double BetAmount = 4;
+        int32 WinCount = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    repeated PlayerInfo Players = 2;
+}
+
+// 离开
+message N3060001 {
+    int32 UserID = 1;
+}
+
+// 玩家进入房间
+message P3060001 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+    string Location = 7;
+    int32 VipLevel = 8;
+    int32 FaceFrameID=9;
+}
+
+// 开局
+message P3060002 {
+    string RoundName = 1;
+    int32 AniTime = 2;
+    int32 TableID = 3;
+}
+
+// 开始下注
+message P3060003 {
+    string RoundName = 1;
+    int32 BetTime = 2;
+    int32 TableID = 3;
+}
+
+// 停止下注
+message P3060004 {
+    string RoundName = 1;
+    int32 TableID = 2;
+}
+
+// 开始发牌
+message P3060005 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 DealCardTime = 3;
+    bytes HandCards = 4; // 0:龙 1：虎
+    int32 WinArea = 5;
+}
+
+// 牌局结束
+message P3060006 {
+    message UserSettle {
+        int32 UserID = 1;
+        int32 SeatNo = 2;
+        double Payoff = 3;
+        double Wealth = 4;
+    }
+    int32 RoundEndType = 1; //0:正常，非零异常结束
+    string RoundName = 2; //局号
+    repeated UserSettle UserSettles = 3;
+    int32 TableID = 4;
+}
+
+// 用户离开
+message P3060007 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+    int32 TableID = 4;
+}
+
+// 用户下注信息
+message P3060008 {
+    string RoundName = 1;
+    int32 SeatNo = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4;
+    repeated double AreaAmounts = 5;
+    int32 TableID = 6;
+}
+
+//踢用户到大厅
+message P3060009 {
+    int32 UserID = 1;
+    int32 LimitRounds=2;
+}
+
+// 提前通知提到大厅
+message P3060010 {
+    int32 UserID = 1;
+    int32 LimitRounds=2;
+    int32 LeftRounds=3;
+}/*
+    元素定义:
+    0 未知
+    1 文字9
+    2 文字10
+    3 文字J
+    4 文字Q
+    5 文字K
+    6 文字A
+    7 元素1
+    8 元素2
+    9 元素3
+    10 元素4
+    11 元素5
+    12 元素6
+    13 百搭符
+    14 金锣
+    101 多福
+    102 多禄
+    103 多寿
+    104 多喜
+*/
+
+/*
+-1100 //游戏未开启
+-1101 //服务器错误
+-1102 //数据错误
+-1103 //请选择其他房间进入
+-1104 //错误的游戏状态
+-1105 //无效的用户
+-1106 //余额不足
+*/
+
+//单个元素
+message DuofuElement {
+    int32 Column = 1;
+    int32 Row = 2;
+    int32 ElementID = 3;
+}
+
+//中奖情况
+message DuofuAward {
+    repeated DuofuElement Elements = 1;
+    int32 Prize = 2;
+}
+
+//结果
+message DuofuResult {
+    repeated DuofuElement Elements = 1;
+    repeated DuofuAward Award = 2;
+}
+
+// 基础配置
+message C3110005 {
+    int32 GameKindID = 1;
+}
+
+// 金额单位分
+message S3110005 {
+    message Element {
+        int32 ID = 1;
+        int32 Prize3 = 2; //最小底分三连赔付
+        int32 Prize4 = 3;
+        int32 Prize5 = 4;
+        bool FreeGame = 5; //是否在免费游戏中出现
+        int32 Type = 6; //0 普通 1 百搭 2 金锣
+    }
+    message PoolElement {
+        int32 ID = 1;
+        int32 Multiple = 2; //中奖倍数，值为0代表全部奖池
+    }
+    message RoomInfo {
+        int32 RoomID = 1;
+        int32 RoomType = 2; //0 多福多财 1 试玩场
+        string RoomName = 3;
+    }
+    repeated int32 BaseAmount = 1; //底分数组
+    repeated int32 Multiple = 2; //倍数数组
+    repeated Element Elements = 3;
+    repeated PoolElement PoolElements = 4;
+    int32 MinBetAmount = 5; //所需最小玩家携带金额
+    int32 MinBaseAmount = 6; //最小底分
+    repeated RoomInfo Rooms = 7;
+    int32 DuofuMinBetAmount = 8; //多福巨奖所需最小下注金额
+    int32 RetCode = 9;
+}
+
+// 进入
+message C3110001 {
+    int32 UserID = 1;
+    int32 RoomID = 2;
+}
+
+message S3110001 {
+    int32 UserID = 1;
+    string UserName = 2;
+    double UserAmount = 3;
+    int32 FaceID = 4;
+    int32 VipLevel = 5;
+    int32 FaceFrameID = 6;
+    double Jackpot = 7;
+    int32 Status = 8; //0 正常 1免费游戏未开始 2 奖池游戏
+    repeated DuofuElement Element = 9; //奖池分布，当Status=2时生效
+    int32 RetCode = 10;
+}
+
+// 旋转
+message C3110002 {
+    int32 UserID = 1;
+    int32 Amount = 2; //投注金额
+}
+
+message S3110002 {
+    int32 UserID = 1;
+    int32 RetCode = 2;
+    DuofuResult Result = 3;
+    int32 Type = 4; //0：未中奖 1：基础中奖 2：大奖 3：暴击大奖
+    double UserAmount = 5;
+    int32 Extention = 6; //0:无 1：免费游戏 2:奖池游戏
+}
+
+// 免费游戏旋转
+message C3110003 {
+    int32 UserID = 1;
+}
+
+message S3110003 {
+    int32 UserID = 1;
+    int32 RetCode = 2;
+    repeated DuofuResult Result = 3;
+    double UserAmount = 4;
+}
+
+// 奖池翻牌
+message C3110004 {
+    int32 UserID = 1;
+    int32 Column = 2;
+    int32 Row = 3;
+}
+
+// 奖池翻牌
+message S3110004 {
+    int32 UserID = 1;
+    int32 Column = 2;
+    int32 Row = 3;
+    int32 Element = 4;
+    int32 Type = 5; //中奖类型 0:未中奖 1:多喜 2:多寿 3:多禄 4:多福
+    int32 Prize = 6;
+    double UserAmount = 7;
+    int32 RetCode = 8;
+}
+
+// 离开
+message N3110001 {
+    int32 UserID = 1;
+}
+
+// 奖池推送
+message P3110001 {
+    double Jackpot = 1;
+    int32 RoomID = 2;
+}
+
+// 踢用户到大厅
+message P3110002 {
+}
+//请求房间
+message C3080001{
+    int32 GameKindID = 1;           // 游戏类型
+}
+message S3080001{
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        double MinEnterAmount = 3;
+        double MaxEnterAmount = 4;
+        string RoomName = 5;
+        double MinRatio = 6;
+        double MaxRatio = 7;
+    }
+    int32 RetCode = 1;
+    repeated RoomInfo Rooms = 2;
+}
+
+//进入房间
+message C3080002{
+    int32 RoomID = 1;
+    int32 UserID = 2;
+}
+message S3080002{
+    message SeatInfo {
+        int32 TableID = 1;
+        int32 SeatNo = 2;
+        int32 FaceID = 3;
+        int32 UserID = 4;
+        string UserName = 5;
+        double UserAmount = 6;
+        int32 CannonID = 7; //炮台ID
+        double Ratio = 8; //炮台倍率
+        int32 VipLevel = 9;
+        int32 FaceFrameID=10;
+    }
+    message FishInfo {
+        int32 FishID=1;
+        int32 KindID=2;
+        int32 Path=3;
+        int64 StartTime=4;
+        int64 CurrentTime=5;
+    }
+    message SkillInfo {
+        int32 UserID = 1;
+        int32 TableID = 2;
+        int32 SeatNo = 3;
+        int32 SkillType = 4;
+        // int32 FreezeTime = 5; //冷却时间
+        // int64 CountDonw = 6; //剩余时间
+    }
+
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    repeated SeatInfo Seats = 5;
+    repeated FishInfo Fishes = 6;
+    repeated SkillInfo Skills = 7;
+    int32 TideID = 8;
+    // int32 CDTime = 9; //冷却时间
+    // int32 LeftCDTime = 10; //剩余冷却时间
+    // int32 FreezeTime = 11; //冰冻时间
+    // int64 CountDonw = 12; //剩余冰冻时间
+}
+
+//炮台种类
+message C3080003{
+    int32 UserID = 1;
+}
+message S3080003{
+    message CannonInfo {
+        int32 ID = 1;
+        string Name = 2; //炮台名称
+        int32 PeriodDay = 3; //有效天数
+        double CostWealth = 4; //购买消耗财富
+        int32 useStatus = 5; //0 未购买,1:已购买未装备, 2:已装备
+        int64 Lefttime = 6; //剩余使用秒数
+    }
+    int32 RetCode = 1;
+    repeated CannonInfo Cannons = 2;
+}
+
+//图鉴
+message C3080004{
+}
+message S3080004{
+    message FishKind {
+        int32 ID = 1;
+        string KindName = 2;
+        double Score = 3;
+    }
+    int32 RetCode = 1;
+    repeated FishKind Kinds = 2;
+}
+
+//使用技能
+message C3080005{
+    int32 UserID=1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 SkillType = 4; //0:冻结 1:自动 2:锁定
+    int32 OpType = 5; //0:使用技能 1:取消技能
+}
+message S3080005{
+    int32 RetCode = 1;
+    int32 SkillType = 2; //0:冻结 1:自动 2:锁定
+    int32 OpType = 3; //0:使用技能 1:取消技能
+}
+
+//购买炮台
+message C3080006 {
+    int32 UserID = 1;   //用户ID
+    int32 CannonID = 2;   //炮台ID
+}
+message S3080006 {
+    int32 RetCode = 1;
+    double CostWealth=2;
+    int32 CannonID=3;
+    int64 Lefttime = 4; //剩余使用秒数
+}
+
+//装载炮台
+message C3080007{
+    int32 UserID=1;
+    int32 CannonID=2;
+}
+message S3080007{
+    int32 RetCode = 1;
+    int32 CannonID=2;
+}
+
+// 重入房间
+message C3080008 {
+    int32 UserID = 1;
+    int32 RoomID = 3;
+    int32 TableID = 4;
+    int32 SeatNo = 5;
+}
+
+message S3080008{
+    message SeatInfo {
+        int32 TableID = 1;
+        int32 SeatNo = 2;
+        int32 FaceID = 3;
+        int32 UserID = 4;
+        string UserName = 5;
+        double UserAmount = 6;
+        int32 CannonID = 7; //炮台ID
+        double Ratio = 8; //炮台倍率
+        int32 VipLevel = 9;
+        int32 FaceFrameID=10;
+    }
+    message FishInfo {
+        int32 FishID=1;
+        int32 KindID=2;
+        int32 Path=3;
+        int64 StartTime=4;
+        int64 CurrentTime=5;
+    }
+    message SkillInfo {
+        int32 UserID = 1;
+        int32 TableID = 2;
+        int32 SeatNo = 3;
+        int32 SkillType = 4;
+        // int32 FreezeTime = 5; //冷却时间
+        // int64 CountDonw = 6; //剩余时间
+    }
+
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    repeated SeatInfo Seats = 5;
+    repeated FishInfo Fishes = 6;
+    repeated SkillInfo Skills = 7;
+    int32 TideID = 8;
+    // int32 CDTime = 9; //冷却时间
+    // int32 LeftCDTime = 10; //剩余冷却时间
+    // int32 FreezeTime = 11; //冰冻时间
+    // int64 CountDonw = 12; //剩余冰冻时间
+
+}
+
+//放鱼
+message P3080001{
+    message FishInfo{
+        int32 FishID=1;
+        int32 KindID=2;
+        int32 Path=3;
+    }
+    repeated FishInfo Fishes=1;
+    int32 RoomID=2;
+    int32 TableID=3;
+}
+
+//玩家进入房间
+message P3080002{
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserWealth = 5;  //当前金币
+    int32 FaceID = 6;
+    int32 CannonID=7; //炮台ID
+    double Ratio=8; //炮台倍率
+    int32 VipLevel = 9;
+    int32 FaceFrameID=10;
+}
+
+//玩家离开
+message P3080003{
+    int32 TableID = 1;
+    int32 SeatNo = 2;
+    int32 UserID = 3;
+}
+
+//通知其他玩家发射子弹信息
+message P3080004{
+    int32 BulletID=1;
+    int32 UserID=2;
+    int32 TableID=3;
+    int32 SeatNo=4;
+    double VectorX=5;//发射向量
+    double VectorY=6;//发射向量
+    int32 Speed=7;
+    double UserAmount=8; //玩家剩余金币
+    int32 FishID=9; //锁定时指定锁定哪条鱼
+}
+
+//冰冻技能完成
+message P3080005{
+    int32 TableID = 2;
+}
+
+//捕获鱼
+message P3080006{
+    int32 BulletID=1;
+    int32 FishID=2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    double Ratio = 5;
+    double AddWealth = 6;
+    double UserAmount = 7; //玩家剩余金币
+}
+
+//使用技能
+message P3080007{
+    int32 UserID=1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 SkillType = 4;
+    int32 OpType = 5; //0:使用技能 1:取消技能
+}
+
+//切换倍率
+message P3080008{
+    int32 TableID = 1;
+    int32 SeatNo = 2;
+    double Ratio=3;
+}
+
+//鱼潮开始
+message P3080009{
+    message FishInfo{
+        int32 FishID=1;
+        int32 KindID=2;
+        int32 Path=3;
+        int64 SpawnTime=4;  //出鱼时间 单位毫秒
+    }
+    repeated FishInfo Fishes = 1;
+    int32 TableID = 2;
+}
+//捕获电鳗鱼
+message P3080010{
+    message CaptureFish{
+        int32  FishID = 1;
+        double Score = 2;
+    }
+    int32 BulletID=1;
+    int32 FishID=2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    double Ratio = 5;
+    double AddWealth = 6;
+    repeated CaptureFish Fishes = 7;//被电死的鱼
+    double UserAmount = 8; //玩家剩余金币
+}
+//BOSS鱼出现
+message P3080011{
+    int32 TableID = 1;
+}
+
+//BOSS鱼消失
+// message P3080012{
+//     int32 TableID = 1;
+// }
+
+//购买炮台后金币推送
+message P3080013{
+    int32 TableID = 1;
+    int32 SeatNo=2;
+    double UserWealth=3;
+}
+
+//炮台切换后推送
+message P3080014{
+    int32 TableID = 1;
+    int32 SeatNo=2;
+    int32 CannonID=3;
+}
+
+//场内所有鱼
+message P3080015 {
+    message FishInfo{
+        int32 FishID=1;
+        int32 Path=2;
+        int64 ElapsedTime =3; //毫秒
+    }
+    int32 RoomID=1;
+    int32 TableID=2;
+    repeated FishInfo Fishes=3;
+}
+
+//鱼潮即将开始
+message P3080016{
+    int32 TableID = 1;
+    int32 TideID = 2;
+    int64 WaveTime = 3; //波浪时间 单位毫秒
+}
+
+//鱼潮时实时推送鱼潮
+message P3080017{
+    repeated int32 Fishes=1;
+    int32 TableID = 2;
+}
+
+//玩家离开
+message N3080001{
+    int32 UserID = 1;
+    int32 LeaveType = 2; //0:掉线,1:离开 客户端不用传
+}
+
+//发射子弹
+message N3080002{
+    int32 BulletID=1;
+    int32 UserID=2;
+    int32 TableID=3;
+    int32 SeatNo=4;
+    double VectorX=5;//发射向量
+    double VectorY=6;//发射向量
+    int32 Speed=7;
+    double Ratio=8;
+    int32 FishID=9; //锁定时指定锁定哪条鱼
+}
+
+//子弹碰到鱼
+message N3080003{
+    int32 BulletID=1;
+    int32 UserID=2;
+    int32 FishID=3;
+    int32 TableID=4;
+    int32 SeatNo=5;
+}
+
+//切换炮台倍率
+message N3080004{
+    int32 UserID = 1;
+    double Ratio = 2;
+}
+
+//百人牛牛协议
+
+
+// 请求百人牛牛房间
+message C3030001 {
+    int32 GameKindID = 1;           // 游戏类型
+}
+
+// 响应百人牛牛房间
+message S3030001 {
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        int32 MinEnterAmount = 3;
+        int64 MaxEnterAmount = 4;
+        string RoomName = 5;
+        int32  Times =6;
+    }
+    int32 RetCode = 1;
+    repeated RoomInfo Rooms = 2;
+}
+
+// 进入房间
+message C3030002 {
+    int32 RoomID = 1;
+    int32 UserID = 2;
+    int32 TableId = 3;
+}
+
+// 响应
+message S3030002 {
+    message BankerInfo {
+        int32 UserID = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        int32 LeftRound = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    repeated SeatInfo Seats = 5;
+    repeated double AreaAmounts = 6;
+    repeated double BetAmounts = 7;
+    BankerInfo Banker = 8;
+    string UserName = 9;
+    double UserAmount = 10;
+    int32 FaceID = 11;
+    int32 Status = 12;      // 1.局開始 2 开始下注 3 停止下注 4 开始发牌 5 开始结算 6牌局結束
+    int32 LeftBetTime = 13; // status 1 时该字段有效
+    string RoundName = 14;
+    int32 BankerAmount = 15;
+    double AreaLimit  = 16;
+    int32 WatchStatus = 17; //0:默认 1:围观
+}
+
+// 下注
+message C3030003 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4;
+}
+
+message S3030003 {
+    int32 RetCode = 1;
+}
+
+// 获取top10
+message C3030004 {
+    int32 UserID = 1;
+}
+
+message S3030004 {
+    message TopInfo {
+        string UserName = 1;
+        double Amount   = 2;
+    }
+    int32 RetCode = 1;
+    repeated TopInfo Tops = 2;
+}
+
+// 获取牌局历史记录
+message C3030005 {
+    int32 UserID = 1;
+}
+
+message S3030005 {
+    message History {
+        bool A1 = 1;
+        bool A2 = 2;
+        bool A3 = 3;
+        bool A4 = 4;
+    }
+    int32 RetCode = 1;
+    repeated History Historys = 2;
+    int32 TotalNums = 3;
+    int32 AWinNums = 4;
+    int32 BWinNums = 5;
+    int32 CWinNums = 6;
+    int32 DWinNums = 7;
+}
+
+// 申请上庄
+message C3030006 {
+    int32 UserID = 1;
+}
+
+message S3030006 {
+    int32 RetCode = 1;
+}
+
+// 获取上庄列表
+message C3030007 {
+    int32 UserID = 1;
+}
+
+message S3030007 {
+    message Banker {
+        string BankerName = 1;
+        int32  FaceID     = 2;
+        int32 VipLevel = 3;
+        int32 FaceFrameID = 4;
+    }
+    int32 RetCode = 1;
+    repeated Banker Bankers = 2;
+}
+
+// 获取旁注列表
+message C3030008 {
+    int32 UserID = 1;
+    repeated int32 Seats = 2;
+}
+
+message S3030008 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+    }
+    int32 RetCode = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+// 申请下庄
+message C3030009 {
+    int32 UserID = 1;
+}
+
+message S3030009 {
+    int32 RetCode = 1;
+}
+
+//玩家列表
+message C3030010 {
+    int32 UserID = 1;
+}
+
+message S3030010 {
+    message PlayerInfo {
+        int32 FaceID = 1;
+        string UserName = 2;
+        double UserAmount = 3;
+        double BetAmount = 4;
+        int32 WinCount = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    repeated PlayerInfo Players = 2;
+}
+
+// 用户离开
+message N3030001 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+}
+
+
+// 玩家进入消息
+message P3030001 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+    string Location = 7;
+    int32 VipLevel = 8;
+    int32 FaceFrameID=9;
+}
+
+// 开始下注
+message P3030002 {
+    string RoundName = 1;
+    int32  BetTime   = 2;
+    int32  TableID   = 3;
+}
+
+// 停止下注
+message P3030003 {
+    string RoundName = 1;
+    int32  TableID   = 2;
+}
+
+// 下注信息
+message P3030004 {
+    string RoundName = 1;
+    int32  SeatNo    = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4;
+    repeated double AreaAmounts = 5;
+}
+
+// 发牌消息
+message P3030005 {
+    message HandCard {
+        int32 HandType = 1;
+        bytes HandCards = 2;
+        int32 HandID    = 3; //play:0-3 bank:4
+    }
+    string RoundName = 1;
+    int32  TableID   = 2;
+    int32  DealCardTime = 3;
+    repeated HandCard HandCards = 4;
+}
+
+// 结算消息
+message P3030006 {
+    message UserSettle {
+        int32 UserID = 1;
+        int32 SeatNo = 2;
+        double Payoff = 3;
+        double Wealth = 4;
+        int32 FaceID = 5;
+        string UserName = 6;
+        int32 VipLevel = 7;
+        int32 FaceFrameID = 8;
+    }
+    message Top10 {
+        string Name = 1;
+        double Wealth = 2;
+    }
+    int32  RoundEndType = 1;           //0:正常，非零异常结束
+    string RoundName = 2;               //局号
+    repeated UserSettle UserSettles = 3;
+    UserSettle Banker = 4;
+    repeated Top10 Tops = 5;
+}
+
+// 用户离开
+message P3030007 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+    int32 TableID = 4;
+}
+
+// 庄家信息
+message P3030008 {
+    int32 UserID = 1;
+    int32 FaceID = 2;
+    string UserName = 3;
+    double UserAmount = 4;
+    int32 LeftRound = 5;
+    string RoundName = 6;
+    int32 TableID = 7;
+    int32 SeatNo = 8;
+    int32 VipLevel = 9;
+    int32 FaceFrameID=10;
+}
+
+// 上桌玩家信息
+message P3030009 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 TableID = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+message P303000A {
+    int32 TableID = 1;
+    string RoundName = 2;
+    bool   A1 =3;
+    bool   A2 =4;
+    bool   A3 =5;
+    bool   A4 =6;
+}
+
+//踢用户到大厅
+message P303000B {
+    int32 UserID = 1;
+    int32 LimitRounds=2;
+}
+
+// 提前通知提到大厅
+message P303000C {
+    int32 UserID = 1;
+    int32 LimitRounds=2;
+    int32 LeftRounds=3;
+}
+// 请求抢庄牛牛房间
+message C3050001 {
+    int32 GameKindID = 1;           // 游戏类型
+    int32 RoomType=2;//0:经典场 1:明牌场
+}
+
+message S3050001 {
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        int32 MinEnterAmount = 3;
+        int64 MaxEnterAmount = 4;
+        string RoomName = 5;
+        int32 RoomType = 6;
+    }
+    repeated RoomInfo Rooms = 1;
+    int32 RetCode = 2;
+}
+
+// 进入房间
+message C3050002 {
+    int32 RoomID = 1;
+    int32 UserID = 2;
+}
+
+message S3050002 {
+    message SeatInfo {
+        int32 TableID = 1;
+        int32 SeatNo = 2;
+        int32 FaceID = 3;
+        string UserName = 4;
+        double UserAmount = 5;
+        int32 Status = 6;
+        int32 VipLevel = 7;
+        int32 FaceFrameID=8;
+    }
+    message Score {
+        int32 SeatNo = 1;
+        int32 Value  = 2;
+        bool IsBanker = 3;
+        bool IsConfirm =4;
+    }
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    int32 SeatNums = 5;
+    int32 Status   = 6;
+    repeated SeatInfo Seats = 7;
+    int32 GameStatus = 8;
+    repeated Score Scores = 9;
+}
+
+// 抢庄
+message C3050003 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    int32 Value  = 3; // 0:不抢 1，2，3，4倍
+}
+
+message S3050003 {
+    int32 RetCode = 1;
+}
+
+// 加倍
+message C3050004 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    int32 Value  = 3; // 1:不加倍，2，3，4，5倍
+}
+
+message S3050004 {
+    int32 RetCode = 1;
+}
+
+// 玩家重入
+message C3050005 {
+    int32 RoomID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 UserID = 4;
+}
+
+message S3050005 {
+    message SeatInfo {
+        int32 TableID = 1;
+        int32 SeatNo = 2;
+        int32 FaceID = 3;
+        string UserName = 4;
+        double UserAmount = 5;
+        int32 Status = 6;
+        int32 VipLevel = 7;
+        int32 FaceFrameID=8;
+    }
+    message Score {
+        int32 SeatNo = 1;
+        int32 Value  = 2;
+        bool IsBanker = 3;
+        bool IsConfirm =4;
+    }
+    int32 RetCode = 1;
+    int32 GameStatus = 2;
+    repeated SeatInfo Seats = 3;
+    repeated Score Scores = 4;
+    bytes HandCards = 5;
+    int32 HandType = 6;
+    int32 LeftTime = 7;
+    int32 MaxValue = 8;
+    int32 RoomType = 9;
+}
+
+// 凑牌完成
+message C3050006 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+}
+
+message S3050006 {
+    int32 RetCode = 1;
+}
+
+// 玩家等待时间
+message C3050007 {
+}
+
+message S3050007 {
+    int32 RetCode = 1;
+    int32 WaitTime = 2;
+    int32 ContinueTime =3;
+}
+
+// 玩家离开
+message C3050008 {
+    int32 UserID = 1;
+}
+
+message S3050008 {
+    int32 RetCode = 1;
+}
+
+// 离座
+message N3050001 {
+    int32 UserID = 1;
+}
+
+// 玩家入座
+message P3050001 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+    int32 Status = 7;               //1：旁观 2:落座
+    int32 VipLevel = 8;
+    int32 FaceFrameID=9;
+}
+
+// 开局
+message P3050002 {
+    string RoundName = 1;
+    int32 TableID = 2;
+}
+
+// 发牌
+message P3050003 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    bytes HandCards = 4;
+    int32 DealTime = 5;
+}
+
+// 通知玩家抢庄叫分
+message P3050004 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 OpTime = 4;
+    int32 MaxValue = 5;
+}
+
+// 玩家抢庄叫分通知消息
+message P3050005 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 Value  = 4;
+}
+
+//  庄家座位号
+message P3050006 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 Value = 4;
+}
+
+// 通知闲家加分
+message P3050007 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 OpTime = 4;
+    int32 MaxValue = 5;
+}
+
+// 闲家叫分通知消息
+message P3050008 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 Value  = 4;
+}
+
+
+// 显示玩家第五张牌
+message P3050009 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 HandType = 4;
+    bytes HandCards = 5;
+    int32 OpTime = 6;
+}
+
+// 牌局结算消息
+message P3050010 {
+    message UserSettle {
+        int32 UserID = 1;
+        int32 SeatNo = 2;
+        double Payoff = 3;
+        double Wealth = 4;
+    }
+    message HandCard {
+        int32 HandType = 1;
+        bytes HandCards = 2;
+    }
+    int32  RoundEndType = 1;           //0:正常，非零异常结束
+    string RoundName = 2;               //局号
+    int32 TableID = 3;
+    repeated UserSettle UserSettles = 4;
+    repeated HandCard HandCards = 5;
+}
+
+// 玩家离座
+message P3050011 {
+    int32 TableID = 1;
+    int32 SeatNo = 2;
+    int32 UserID = 3;
+}
+
+// 玩家凑牌完成
+message P3050012 {
+    int32 TableID = 1;
+    int32 SeatNo = 2;
+    int32 UserID = 3;
+    int32 HandType = 4;
+    bytes HandCards = 5;
+}
+
+// 牌局结束
+message P3050013 {
+    string RoundName = 1;
+    int32 TableID = 2;
+}
+// 充值申请
+message C2010001 {
+    int32 UserID = 1;
+    double BillPrice = 2;      //订单金额
+    string DeviceIP = 3;         // 用户ip
+    string DeviceID = 4;      // 用户设置机器码
+    string DeviceType = 5;    // 设备类型 ios/android
+    string UserName = 6;      // 用户姓名
+    string PayAccount = 7;    // 支付账号
+    string Telephone = 8;     // 电话号码
+    int32  PayType = 9;       //0 Vip 1 支付宝 2 微信 3 QQ 4 银行卡 5 京东 6 PC 7 Card 99 定额支付宝 9100 易充纵游卡 101 移动话费卡 102 电信话费卡 103 联通话费卡
+    int32 PayChannel = 10;    // 不再使用
+
+    string CardMainType = 11; // 点卡充值才有的接口
+    string CardSubType = 12;
+    string CardNo      = 13;
+    string CardPWD     = 14;
+    string MetaData    = 15;
+}
+
+// 充值申请响应
+message S2010001 {
+    int32 RetCode = 1;
+    string PayUrl = 2;       // 支付地址
+    int32 UserID = 3;
+    string OrderID = 4;      // 订单号
+    bool DecodeUrl = 5;     //Url是否需要在客户端解码
+    int32 PayChannel = 6;  //9、11、15及大于15代表非闪付
+}
+
+// 充值渠道信息查询
+message C2010002 {
+    int32 UserID = 1;
+    string UserIP = 2;
+}
+
+message S2010002 {
+    message PayChannel {
+        int32 PayType = 1;
+        int32 LimitMax = 2;
+        int32 LimitMin = 3;
+        int32 PayChannel = 4; //不再使用
+        repeated int32 FixedAmount = 5; //当PayType=99时启用，为各定额金额
+    }
+    message CardChannel {
+        int32 PayType = 1;
+        string CardMainType = 2;
+        string CardSubType = 3;
+        int32 PayChannel = 4;       // 支付渠道号
+        string Value  = 5;
+    }
+    int32 RetCode = 1;
+    int32 UserID = 2;
+    repeated PayChannel Pays = 3;
+    repeated CardChannel Cards = 4;
+}
+
+// 充值结果查询
+message C2010003 {
+    int32 UserID = 1;
+    string OrderID = 2;      // 订单号
+}
+message S2010003{
+    int32 RetCode = 1;
+    int32 Status = 2; //0:处理中 1:成功 2:失败
+}
+
+// 云闪付活动
+message C2010004 {
+    int32 UserID = 1;
+}
+
+message S2010004 {
+    int32 RetCode = 1;
+    int32 Status = 2; //0:关闭 1:开启
+    double GiveRate = 3; //赠送费率
+}
+
+// 充值结果
+message P2010001 {
+    int32 UserID = 1;
+    string OrderID = 2;
+    int32 Status = 3;
+    double PayedMoney = 4;    // 支付金额
+    double UserAmount = 5;    // 携带金币
+}
+
+
+// 连接消息
+message N2010001 {
+}// 十三水
+
+// 请求十三水游戏房间
+message C3090001 {
+    int32 GameKindID = 1; // 游戏类型
+}
+
+// 响应十三水房间
+message S3090001 {
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        int32 MinEnterAmount = 3;
+        int64 MaxEnterAmount = 4;
+        string RoomName = 5;
+    }
+    repeated RoomInfo Rooms = 1;
+    int32 RetCode = 2;
+}
+
+// 进入房间
+message C3090002 {
+    int32 RoomID = 1;
+    int32 UserID = 2;
+}
+
+//响应进入房间消息
+message S3090002 {
+    message SeatInfo {
+        int32 TableID = 1;
+        int32 SeatNo = 2;
+        int32 FaceID = 3;
+        string UserName = 4;
+        double UserAmount = 5;
+        int32 Status = 6;
+    }
+    message Score {
+        // todo 看情况要不要做看见别人开牌的情况
+    }
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    int32 SeatNums = 5;
+    int32 Status = 6;
+    repeated SeatInfo Seats = 7;
+    int32 GameStatus = 8;
+    repeated Score Scores = 9;
+}
+
+// 用户通知准备开始游戏
+message C3090003 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+}
+
+//响应用户通知准备开始游戏
+message S3090003 {
+    int32 RetCode = 1;
+}
+
+// 获取重入牌局
+message C3090005 {
+    int32 RoomID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 UserID = 4;
+}
+
+// 响应
+message S3090005 {
+    message SeatInfo {
+        int32 TableID = 1;
+        int32 SeatNo = 2;
+        int32 FaceID = 3;
+        string UserName = 4;
+        double UserAmount = 5;
+        int32 Status = 6;
+    }
+    message Score {
+        int32 SeatNo = 1;
+        //todo 游戏信息
+    }
+    int32 RetCode = 1;
+    int32 GameStatus = 2;
+    repeated SeatInfo Seats = 3;
+    repeated Score Scores = 4;
+    int32 LeftTime = 5;
+}
+
+// 出牌
+message C3090006 {
+    message CardType {
+        bytes HandCards = 1;
+        int32 Type = 2; // 普通牌型
+    }
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+    CardType Cards1 = 4; //头墩
+    CardType Cards2 = 5; //中墩
+    CardType Cards3 = 6; //尾墩
+    int32 Type = 7; //0是普通牌型
+}
+
+// 返回
+message S3090006 {
+    int32 RetCode = 1;
+}
+
+// 用户离开游戏
+message N3090001 {
+    int32 UserID = 1;
+}
+
+// 通知用户桌台离开
+// UserID是自己，还在房间内代表踢走了
+message P309000A {
+    int32 TableID = 1;
+    int32 SeatNo = 2;
+    int32 UserID = 3;
+}
+
+// 玩家入座
+message P3090001 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+    int32 Status = 7; //1：旁观 2:落座
+}
+
+// 服务端推送用户准备成功消息
+message P3090002 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+}
+
+// 开局
+message P3090003 {
+    string RoundName = 1;
+    int32 TableID = 2;
+}
+
+// 发牌
+message P3090004 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    int32 DealTime = 4;
+    bytes HandCards = 5;
+}
+
+// 理牌完成
+message P3090005 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+}
+
+// 比牌，结算
+message P3090006 {
+    message CardType {
+        bytes HandCards = 1;
+        int32 Type = 2; // 牌型
+    }
+    message UserSettle {
+        int32 SeatNo = 1;
+        int32 Type = 2; //0是普通牌型
+        CardType Card1 = 3;
+        CardType Card2 = 4;
+        CardType Card3 = 5;
+        repeated int32 GunTo = 6; //被打枪人座位号，长度为3的就是全垒打的
+        int32 Value = 7; //总分
+        double Money = 8; //金额
+        double Wealth = 9; //剩余金额
+    }
+    int32 RoundEndType = 1; //0:正常，非零异常结束
+    string RoundName = 2; //局号
+    int32 TableID = 3;
+    repeated UserSettle Users = 4; //结算信息
+}
+
+// 牌局结束
+message P3090007 {
+    string RoundName = 1;
+    int32 TableID = 2;
+}
+// 请求房间
+message C3040001 {
+    int32 GameKindID = 1;
+}
+
+message S3040001 {
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        int32 MinEnterAmount = 3;
+        int64 MaxEnterAmount = 4;
+        string RoomName = 5;
+    }
+    repeated RoomInfo Rooms = 1;
+    int32 RetCode = 2;
+}
+
+// 进入房间
+message C3040002 {
+    int32 RoomID = 1;
+    int32 UserID = 2;
+    int32 TableId = 3;
+}
+
+message S3040002 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+
+    message History {
+        int32 Result = 1; // 0 红方胜 1 黑方胜
+        int32 HandType = 2; //牌型
+    }
+
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    string UserName = 5;
+    double UserAmount = 6;
+    int32 FaceID = 7;
+    repeated SeatInfo Seats = 8;
+    repeated double AreaAmounts = 9;
+    repeated double BetAmounts = 10;
+    int32 Status = 11;      // 1.局開始 2 开始下注 3 停止下注 4 开始发牌 5 开始结算 6牌局結束
+    int32 LeftBetTime = 12; // status 1 时该字段有效
+    string RoundName = 13;
+    repeated History Historys = 14;  // 历史牌局概要
+    int32 WatchStatus = 15; //0:默认 1:围观
+}
+
+// 下注
+message C3040003 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4;
+}
+
+message S3040003 {
+    int32 RetCode = 1;
+}
+
+// 20局记录
+message C3040004 {
+    int32 UserID = 1;
+}
+
+message S3040004 {
+    message History {
+        int32 Result = 1; // 0 红方胜 1 黑方胜
+        int32 HandType = 2; //牌型
+    }
+    message Road {
+        int32 Result = 1;
+        int32 Count  = 2;
+    }
+    int32 RetCode = 1;
+    repeated History Historys = 2;
+    repeated Road Roads = 3;        //20 列牌路
+}
+
+// 获取入座列表
+message C3040005 {
+    int32 UserID = 1;
+}
+
+message S3040005 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+        string Location = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+// 获取旁注列表
+message C3040006 {
+    int32 UserID = 1;
+    repeated int32 Seats = 2;
+}
+
+message S3040006 {
+    message SeatInfo {
+        int32 SeatNo = 1;
+        int32 FaceID = 2;
+        string UserName = 3;
+        double UserAmount = 4;
+    }
+    int32 RetCode = 1;
+    repeated SeatInfo Seats = 2;
+}
+
+//玩家列表
+message C3040007 {
+    int32 UserID = 1;
+}
+
+message S3040007 {
+    message PlayerInfo {
+        int32 FaceID = 1;
+        string UserName = 2;
+        double UserAmount = 3;
+        double BetAmount = 4;
+        int32 WinCount = 5;
+        int32 VipLevel = 6;
+        int32 FaceFrameID=7;
+    }
+    int32 RetCode = 1;
+    repeated PlayerInfo Players = 2;
+}
+
+// 离开
+message N3040001 {
+    int32 UserID = 1;
+}
+
+// 玩家进入房间
+message P3040001 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+    string Location = 7;
+    int32 VipLevel = 8;
+    int32 FaceFrameID=9;
+}
+
+// 开局
+message P3040002 {
+    string RoundName = 1;
+    int32  AniTime   = 2;
+    int32  TableID   = 3;
+}
+
+// 开始下注
+message P3040003 {
+    string RoundName = 1;
+    int32  BetTime   = 2;
+    int32  TableID   = 3;
+}
+
+// 停止下注
+message P3040004 {
+    string RoundName = 1;
+    int32  TableID   = 2;
+}
+
+// 开始发牌
+message P3040005 {
+    message HandCard {
+        int32 HandType = 1;
+        bytes HandCards = 2;
+        int32 HandID    = 3; //0:red 1:black
+    }
+    string RoundName = 1;
+    int32  TableID   = 2;
+    int32  DealCardTime = 3;
+    repeated HandCard HandCards = 4;
+    repeated int32 WinArea = 5;
+}
+
+// 牌局结束
+message P3040006 {
+    message UserSettle {
+        int32 UserID = 1;
+        int32 SeatNo = 2;
+        double Payoff = 3;
+        double Wealth = 4;
+    }
+    int32  RoundEndType = 1;           //0:正常，非零异常结束
+    string RoundName = 2;               //局号
+    repeated UserSettle UserSettles = 3;
+    int32  TableID = 4;
+}
+
+// 用户离开
+message P3040007 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+    int32 TableID = 4;
+}
+
+// 用户下注信息
+message P3040008 {
+    string RoundName = 1;
+    int32  SeatNo    = 2;
+    double BetAmount = 3;
+    int32 BetArea = 4;
+    repeated double AreaAmounts = 5;
+    int32 TableID = 6;
+}
+
+// 踢用户到大厅
+message P3040009 {
+    int32 UserID = 1;
+    int32 LimitRounds = 2;
+}
+
+// 提前通知踢到大厅
+message P3040010 {
+    int32 UserID = 1;
+    int32 LimitRounds = 2;
+    int32 LeftRounds=3;
+}//炸金花协议
+
+// 请求炸金花游戏房间
+message C3020001 {
+    int32 GameKindID = 1;           // 游戏类型
+}
+
+// 响应炸金花房间
+message S3020001 {
+    message RoomInfo {
+        int32 RoomID = 1;
+        double BaseAmount = 2;
+        int32 MinEnterAmount = 3;
+        int64 MaxEnterAmount = 4;
+        string RoomName = 5;
+    }
+    repeated RoomInfo Rooms = 1;
+    int32 RetCode = 2;
+}
+
+
+// 进入房间
+message C3020002 {
+    int32 RoomID = 1;
+    int32 UserID = 2;
+    int32 TableId = 3; //上一次的桌台号,进入房间要排除掉这个桌台号
+}
+
+// 响应进入房间消息
+message S3020002 {
+    message SeatInfo {
+        int32 TableID = 1;
+        int32 SeatNo = 2;
+        int32 FaceID = 3;
+        string UserName = 4;
+        double UserAmount = 5;
+        int32 Status = 6; //1:旁观 2:游戏中 3:弃牌或已结算
+        int32 BCheck = 7; // 0:未看牌 1：已看牌
+        int32 VipLevel = 8;
+        int32 FaceFrameID=9;
+    }
+    int32 RetCode = 1;
+    int32 RoomID = 2;
+    int32 TableID = 3;
+    int32 SeatNo = 4;
+    int32 SeatNums = 5;
+    int32 Status   = 6;
+    repeated SeatInfo Seats = 7;
+    double AmountPool = 8;
+    int32 OpTime = 9;          //操作时间
+    double MaxSingleAmount = 10;
+    int32  MaxRounds = 11;
+    int32  CurRound  = 12;
+}
+
+// 获取桌台信息
+message C3020003 {
+    int32 TableID = 1;
+    int32 UserID = 2;
+}
+
+// 返回桌台信息
+message S3020003 {
+    message SeatInfo {
+        int32 TableID = 1;
+        int32 SeatNo = 2;
+        int32 FaceID = 3;
+        string UserName = 4;
+        double UserAmount = 5;
+        int32 Status = 6;
+    }
+    int32 RetCode = 1;
+    int32 UserID = 2;
+    repeated SeatInfo Seats = 3;
+}
+
+// 弃牌
+message C3020004 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+}
+
+// 响应弃牌
+message S3020004 {
+    int32 RetCode = 1;
+    int32 UserID = 2;
+    bytes HandCards = 3;
+    int32 HandType = 4;
+}
+
+// 看牌
+message C3020005 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+}
+
+// 响应看牌
+message S3020005 {
+    int32 RetCode = 1;
+    int32 UserID = 2;
+    bytes HandCards = 3;
+    int32 HandType = 4;
+    double CurAmount = 5;
+    double AllinAmount = 6;
+    double BloodAmount = 7;
+}
+
+// 下注
+message C3020006 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+    double BetAmount = 4;
+    int32  BetType   = 5;         //1 跟注 2加注
+}
+
+// 响应下注
+message S3020006 {
+    int32 RetCode = 1;
+    int32 UserID = 2;
+}
+
+// 比牌
+message C3020007 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    int32 BeatNo = 3;
+    string RoundName = 4;
+}
+
+// 响应比牌
+message S3020007 {
+    int32 RetCode = 1;
+    int32 UserID  = 2;
+}
+
+
+// 血拼
+message C3020008 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+    double BetAmount = 4;
+}
+
+// 响应血拼
+message S3020008 {
+    int32 RetCode = 1;
+    int32 UserID  = 2;
+}
+
+// 全压
+message C3020009 {
+    int32 UserID = 1;
+    int32 SeatNo = 2;
+    string RoundName = 3;
+    double BetAmount = 4;
+}
+
+// 响应全压
+message S3020009 {
+    int32 RetCode = 1;
+    int32 UserID  = 2;
+    double BetAmount = 3;
+}
+
+// 玩家等待时间
+message C3020010 {
+}
+
+message S3020010 {
+    int32 RetCode = 1;
+    int32 WaitTime = 2;
+    int32 ContinueTime =3;
+}
+
+
+// 用户离开游戏
+message N3020001 {
+    int32 UserID = 1;
+}
+
+
+// 推送用户进入房间消息
+message P3020001 {
+    int32 UserID = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+    string UserName = 4;
+    double UserAmount = 5;
+    int32 FaceID = 6;
+    int32 Status = 7;               //1：旁观 2:落座
+    int32 VipLevel = 8;
+    int32 FaceFrameID=9;
+}
+
+// 服务端推送游戏开始消息
+message P3020002 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 OpTime = 3;          //操作时间
+    double AmountPool = 4;      //初始彩池
+    double BaseAmount = 5;
+    double MaxSingleAmount = 6;
+    int32  MaxRounds = 7;
+    int32 CurSeatNo = 8;
+    int32 VsRound   = 9;
+}
+
+
+// 推送轮到某玩家操作消息
+message P3020003 {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 CurSeatNo = 3;
+    double CurAmount = 4;
+    double AllinAmount = 5;
+    double BloodAmount = 6;
+    int32 CurRound = 7;
+}
+
+// 推送玩家下注消息
+message P3020004 {
+    string RoundName = 1;
+    int32  TableID  = 2;
+    int32  SeatNo   = 3;
+    double BetAmount = 4;
+    int32  BetType   = 5;
+    double AmountPool = 6;
+}
+
+// 推送比牌结果
+message P3020005 {
+    string RoundName = 1;
+    int32  TableID  = 2;
+    int32  WinerNo  = 3;       // 比牌胜利座位号
+    int32  InitiatorNo = 4;    // 比牌发起者座位号
+    int32  VsNo        = 5;    // 被比牌者座位号
+    double AmountPool = 6;
+}
+
+// 推送玩家弃牌消息
+message P3020006 {
+    string RoundName = 1;
+    int32  TableID   = 2;
+    int32  SeatNo    = 3;
+}
+
+// 推送牌局结束消息
+message P3020007 {
+    message UserEndInfos {
+        int32 SeatNo = 1;
+        bytes HandCards = 2;
+        double UserAmount = 3;
+    }
+    int32  RoundEndType = 1;
+    string RoundName = 2;
+    int32  TableID   = 3;
+    int32  WinerNo  = 4;
+    double Payoff   = 5;
+    int32  HandType = 6;
+    repeated UserEndInfos Users = 7;
+}
+
+// 用户离座
+message P3020008 {
+    int32  TableID   = 1;
+    int32  SeatNo    = 2;
+    int32  UserID    = 3;
+}
+
+// 用户余额不足消息
+message P3020009 {
+    int32  UserID    = 1;
+}
+
+
+// 推送用户血拼消息
+message P302000A {
+    string RoundName = 1;
+    int32  TableID  = 2;
+    int32  SeatNo   = 3;
+    double BetAmount = 4;
+    double AmountPool = 5;
+}
+
+// 推送用户全压消息
+message P302000B {
+    string RoundName = 1;
+    int32  TableID  = 2;
+    int32  SeatNo   = 3;
+    double BetAmount = 4;
+    double AmountPool = 5;
+    bool   FirstAllin = 6;
+}
+
+// 推送玩家看牌消息
+message P302000C {
+    string RoundName = 1;
+    int32 TableID = 2;
+    int32 SeatNo = 3;
+}// 推广链接
+message C5030001 {
+    int32 UserID = 1;
+}
+
+message S5030001 {
+    int32 RetCode = 1;
+    string WebUrl = 2;
+}
+
+// 我的推广
+message C5030002 {
+    int32 UserID = 1;
+}
+
+message S5030002 {
+    int32 RetCode=1;
+    double LastdayTotalAmount=2;  //昨日总奖励
+    int32 DireNums=3;   //直属玩家数
+    int32 OtherNums=4;  //其他玩家数
+    double LastdayDireAmount=5;  //昨日直属玩家奖励
+    double LastdayOtherAmount=6;  //昨日其他玩家奖励
+    double HisTotalAmount=7;   //历史总奖励
+    double UngetAmount=8; //未领取奖励
+}
+
+//推广明细
+message C5030003 {
+    int32 UserID = 1;
+}
+
+message S5030003 {
+    message AmountDetail{
+        int32 TopN=1;
+        string NickName=2;
+        double Amount=3;
+    }
+    int32 RetCode=1;
+    repeated AmountDetail Details=2;
+}
+
+//推广周榜
+message C5030004 {
+    int32 UserID = 1;
+}
+
+message S5030004 {
+    message WeekTop{
+        int32 TopN=1;
+        string NickName=2;
+        double Amount=3;
+    }
+    int32 RetCode=1;
+    repeated WeekTop TopList=2;
+}
+
+//领取返利金币
+message C5030005 {
+    int32 UserID = 1;
+}
+
+message S5030005 {
+    int32 RetCode = 1;
+    double GetAmount = 2; //领取金额
+    double UserWealth = 3;//领取后钱包金额
+}
+
+//领取记录
+message C5030006 {
+    int32 UserID = 1;
+}
+
+message S5030006 {
+    message GetAmountRecord{
+        int64 GetAmountTime=1;
+        double Amount=2;
+    }
+    int32 RetCode=1;
+    repeated GetAmountRecord Records=2;
+}
+
+//全民代理开关
+message C5030007 {
+    int32 UserID = 1;
+}
+message S5030007 {
+    int32 RetCode = 1;
+    int32 Status = 2; //0:关 1:开
+}

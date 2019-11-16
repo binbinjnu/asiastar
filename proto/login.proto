@@ -1,0 +1,46 @@
+syntax = "proto3";
+package login;
+// 登录协议, 包括: login相关协议和心跳包
+// base 100
+
+// 心跳包
+// 10000
+message c2s_heartbeat
+{
+}
+
+// 10000
+message s2c_heartbeat
+{
+    int64 timestamp = 1;    // 时间戳 ms
+}
+
+// 登录请求
+// 10001
+message c2s_login {
+    int32 iSiteID = 1;          //
+    int32 iTerminalType = 2;    // 登录设备类型 1、Android 、2、IOS 3、 PC
+    int32 iLoginType = 3;       // 登录类型 1.快速（游客） 3.正式账号登陆
+    string sAccount = 4;         // 账号
+    string sPassword = 5;        // 密码
+    string sMachine = 6;         // 机器码
+    string sChannel = 7;         // 渠道
+}
+
+// 登录返回
+// 10001
+message s2c_login {
+    int32 iCode = 1;        // 状态码 0;正常, 1:xx, 2:yy  默认0
+    int32 iUserID = 2;      // 角色id
+    int32 iBindMobile = 3;  // 0.未绑定, 1.已绑定
+    string sPhoneNumber = 4; // 手机号码
+    string sNickName = 5;   //
+    int32 iIcon     = 6;
+    string sSelfPhoto = 7;
+    int32 iMemberLevel = 8;
+    int32 iSpreaderID = 9; //推广员ID
+    int32 iExp = 10;
+    int64 iGameCoin = 11;
+    int64 iBankCoin = 12;
+}
+

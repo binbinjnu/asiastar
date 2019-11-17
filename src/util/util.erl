@@ -13,7 +13,9 @@
 -export([
     rand/2,
     term_to_string/1,
+    string_to_term/1,
     term_to_bitstring/1,
+    bitstring_to_term/1,
     get_call_from/0,
     erlang_get/2,
 
@@ -32,6 +34,7 @@ rand(Same, Same) ->
 rand(Min, Max) ->
     M = Min - 1,
     rand:uniform(Max - M) + M.
+
 
 get_call_from() ->
     lists:sublist(get_call_stack(), 3, 1).
@@ -78,9 +81,24 @@ stack_format({M, F, _A, Info}) ->
 term_to_string(Term) ->
     lists:flatten(io_lib:format("~9999999p", [Term])).
 
+string_to_term(String) ->
+    case erl_scan:string(String++".") of
+        {ok, Tokens, _} ->
+            case erl_parse:parse_term(Tokens) of
+                {ok, Term} -> Term;
+                _Err -> undefined
+            end;
+        _Error ->
+            undefined
+    end.
+
+bitstring_to_term(BitString) ->
+    String = erlang:binary_to_list(BitString),
+    string_to_term(String).
 
 term_to_bitstring(Term) ->
     erlang:list_to_bitstring(io_lib:format("~999999p", [Term])).
+
 
 %% erlang:get带默认值
 erlang_get(Key, Default) ->
@@ -88,6 +106,7 @@ erlang_get(Key, Default) ->
         undefined -> Default;
         Res -> Res
     end.
+
 
 %% 获取process_name
 process_name() ->
@@ -98,6 +117,7 @@ process_name(Pid) ->
         {registered_name, Name} -> Name;
         _ -> Pid
     end.
+
 
 %% 过滤opts
 filter_opts(Opts, Allows) ->
@@ -116,6 +136,7 @@ deny_opts(Opts, Denies) ->
         List -> erlang:error({invalid_opts, List})
     end.
 
+
 %% 向上取整 大于N的最小整数
 ceil(N) ->
     case trunc(N) of
@@ -125,7 +146,6 @@ ceil(N) ->
             M + 1;
         M -> M
     end.
-
 
 %% 向下取整 小于X的最大整数
 floor(X) ->

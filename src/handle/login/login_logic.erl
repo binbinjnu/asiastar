@@ -19,29 +19,33 @@
 %% API
 -export([login/2]).
 
+%% 登录 (在玩家进程中取返回s2c_login)
 login(#c2s_login{sAccount = Account} = Req, State) ->
-    case db_mysql_api:select_user_master(Account) of
-        {ok, UserMaster} ->
-            Pid = enter(UserMaster),
-            State#handler_state{pid = Pid};
-        _ ->
-            UserMaster = create(Req),
-            Pid = enter(UserMaster),
-            State#handler_state{pid = Pid}
-    end.
-
-%% 新建账号
-create(_Req) ->
-%%    #c2s_login{
+    #c2s_login{
 %%        iSiteID = SiteID,
 %%        iTerminalType = TerminalType,
 %%        iLoginType = LoginType,
-%%        sAccount = Account,
-%%        sPassword = Password,
+        sAccount = Account,
+        sPassword = Password,
 %%        sMachine = Machine,
-%%        sChannel = Channel
-%%    } = Req,
-    ok.
+        sChannel = Channel
+    } = Req,
+    BaseInfo =
+        #user_master{
+            account_name = Account,
+            account_passwd = Password,
+            channel_id = Channel
+        },
+    case login_gsvr:get_user_master(BaseInfo) of
+        {ok, UserMaster} ->
+            Pid = enter(UserMaster),
+            %% todo 登录日志
+            State#handler_state{pid = Pid};
+        _ ->
+            self() ! stop,
+            State
+    end.
+
 
 %% 进入游戏
 enter(UserMaster) ->

@@ -14,7 +14,7 @@
 %% --------------------------------------------------------------------
 -include("hrl_common.hrl").
 -include("hrl_logs.hrl").
--include("record.hrl").
+-include("hrl_player.hrl").
 
 %% --------------------------------------------------------------------
 %% External exports
@@ -43,8 +43,11 @@ init([UID]) ->
     erlang:process_flag(trap_exit, ?true),
     erlang:process_flag(max_heap_size, ?MAX_HEAP_SIZE),
     player_checker:reg(),
-    gen_server:cast(self(), init),
-    {ok, [UID]}.
+    ?true = erlang:register(player_api:pid_name(UID), self()),
+    erlang:put(process_type, player),
+    erlang:put(player_uid, UID),
+%%    gen_server:cast(self(), init),
+    {ok, #player{uid = UID}}.
 
 
 handle_call(Request, From, Player) ->
@@ -56,20 +59,6 @@ handle_call(Request, From, Player) ->
             {reply, error, Player}
     end.
 
-handle_cast(init, [UID]) ->
-    try
-        ?true = erlang:register(player_api:pid_name(UID), self()),
-        %% todo load data
-        Player = #player{},
-        erlang:put(process_type, player),
-        erlang:put(player_uid, UID),
-%%        Player1 = xg_player:after_load(Player),
-        {noreply, Player}
-    catch
-        Err:Reason ->
-            ?ERROR("ERR:~p,Reason:~p", [Err, Reason]),
-            {stop, Reason, []}
-    end;
 handle_cast(Request, Player) ->
     try
         do_cast(Request, Player)
@@ -115,6 +104,11 @@ do_call({route_evt, MsgID, Data}, _From, Player) ->
 do_call(_Msg, _From, Player) ->
     ?WARNING("unhandle call ~w", [_Msg]),
     {reply, error, Player}.
+
+%% ConnType: connect | reconnect
+do_cast({connect, ConnType, UserMaster}, Player) ->
+
+    {noreply, Player};
 
 do_cast(kick, Player) ->
     {stop, normal, Player};

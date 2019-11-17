@@ -10,6 +10,7 @@
 -author("Administrator").
 
 -include("record.hrl").
+-include("hrl_db.hrl").
 -include("hrl_common.hrl").
 
 %% API
@@ -20,6 +21,10 @@
 ]).
 
 login_by_session(Player) ->
+    Player.
+
+connect(ConnType, UserMaster, Player) ->
+    case ConnType of
     Player.
 
 loop(Player) ->

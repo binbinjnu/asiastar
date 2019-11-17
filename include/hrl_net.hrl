@@ -24,3 +24,14 @@
 -define(NET_PACKET_PER_SEC, 20).    %% 每秒中网络包数量
 -define(NET_MAX_WATER_LV, 300).     %% 水位警戒等级
 -define(NET_HEART_TIMEOUT, 120).    %% 心跳超时 seconds
+
+%% net_handler 的state record
+-record(handler_state, {
+    state     = undefined   :: term(),              %% 状态
+    pid       = undefined   :: pid() | undefined,   %%
+    socket    = undefined   :: port() | undefined,  %%
+    peername  = undefined,
+    acc       = undefined,
+    init_time = 0,                                  %% 初始化时间
+    debug_pid = 0
+}).

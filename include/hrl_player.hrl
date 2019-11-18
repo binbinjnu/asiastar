@@ -13,14 +13,30 @@
 -define(PLAYER_STATE_NORMAL, 1).    %% 跟消息进程建立连接, 并初始化完数据了
 -define(PLAYER_STATE_DISCONN, 2).   %% 已加载过数据的连接断开
 
+
 %% 玩家数据
 -record(player, {
     version         = 0,                % 数据版本, 必须为第一位
-    uid             = 0,                 % 角色唯一ID
-    state           = 0,                 %
-    online_loop     = 0,                 % 玩家累计在线秒数计数
+    %% 玩家数据库中有的数据
+    user_id         = 0,                % 角色唯一ID
+
+    game_coin       = 0,                % 身上金币
+    bank_coin       = 0,                % 银行金币
+
+    account         = <<"">>,           % 账号
+    password        = <<"">>,           % 密码
+    nick_name       = <<"">>,           % 昵称
+    phone           = <<"">>,           % 手机号码
+    icon            = <<"">>,           % 头像
+    channel         = <<"">>,           % 渠道
+
+    %% 玩家临时数据
+    state           = 0,                % 玩家状态, 对应宏定义 PLAYER_STATE_XXX
+    game_state      = undefined,        % 游戏状态, 不在游戏中:undefined, 游戏中:{game_id, type_id, table_id, PID}
+    online_loop     = 0,                % 玩家累计在线秒数计数
     spid            = undefined,
-    name            = <<"">>,
+
+
 
     tsends          = [],
     tevents         = [],

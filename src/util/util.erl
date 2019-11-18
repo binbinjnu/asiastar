@@ -11,11 +11,6 @@
 
 %% API
 -export([
-    rand/2,
-    term_to_string/1,
-    string_to_term/1,
-    term_to_bitstring/1,
-    bitstring_to_term/1,
     get_call_from/0,
     erlang_get/2,
 
@@ -23,17 +18,9 @@
     process_name/1,
 
     filter_opts/2,
-    deny_opts/2,
-
-    ceil/1,
-    floor/1
+    deny_opts/2
 ]).
 
-rand(Same, Same) ->
-    Same;
-rand(Min, Max) ->
-    M = Min - 1,
-    rand:uniform(Max - M) + M.
 
 
 get_call_from() ->
@@ -62,7 +49,7 @@ empty_stacktrace() ->
     end.
 
 stack_format({M, F, A, Info}) when is_list(A) ->
-    A1 = lists:sublist(term_to_string(A), 40),
+    A1 = lists:sublist(util_code:term_to_string(A), 40),
     case lists:keyfind(line, 1, Info) of
         {_, Line} ->
             {M, F, Line, A1};
@@ -76,28 +63,6 @@ stack_format({M, F, _A, Info}) ->
         _ ->
             {M, F}
     end.
-
-
-term_to_string(Term) ->
-    lists:flatten(io_lib:format("~9999999p", [Term])).
-
-string_to_term(String) ->
-    case erl_scan:string(String++".") of
-        {ok, Tokens, _} ->
-            case erl_parse:parse_term(Tokens) of
-                {ok, Term} -> Term;
-                _Err -> undefined
-            end;
-        _Error ->
-            undefined
-    end.
-
-bitstring_to_term(BitString) ->
-    String = erlang:binary_to_list(BitString),
-    string_to_term(String).
-
-term_to_bitstring(Term) ->
-    erlang:list_to_bitstring(io_lib:format("~999999p", [Term])).
 
 
 %% erlang:get带默认值
@@ -134,25 +99,4 @@ deny_opts(Opts, Denies) ->
     case [Op || Op <- Opts, F(Op)] of
         [] -> ok;
         List -> erlang:error({invalid_opts, List})
-    end.
-
-
-%% 向上取整 大于N的最小整数
-ceil(N) ->
-    case trunc(N) of
-        M when M == N ->
-            M;
-        M when N > 0 ->
-            M + 1;
-        M -> M
-    end.
-
-%% 向下取整 小于X的最大整数
-floor(X) ->
-    case trunc(X) of
-        T when X == T ->
-            T;
-        T when X > 0 ->
-            T;
-        T -> T - 1
     end.

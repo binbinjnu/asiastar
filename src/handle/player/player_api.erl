@@ -24,8 +24,8 @@
 ]).
 
 %% 玩家pid
-pid(UID) ->
-    PidName = pid_name(UID),
+pid(UserID) ->
+    PidName = pid_name(UserID),
     case whereis(PidName) of
         Pid when is_pid(Pid) ->
             Pid;
@@ -34,13 +34,13 @@ pid(UID) ->
     end.
 
 %% 玩家pid名字
-pid_name(UID) ->
-    list_to_atom("pl_" ++ integer_to_list(UID)).
+pid_name(UserID) ->
+    list_to_atom("pl_" ++ integer_to_list(UserID)).
 
 
 %% 玩家消息进程
-spid(UID) ->
-    PidName = spid_name(UID),
+spid(UserID) ->
+    PidName = spid_name(UserID),
     case whereis(PidName) of
         Pid when is_pid(Pid) ->
             Pid;
@@ -49,16 +49,16 @@ spid(UID) ->
     end.
 
 %% 玩家消息进程名字
-spid_name(UID) ->
-    list_to_atom("sd_" ++ integer_to_list(UID)).
+spid_name(UserID) ->
+    list_to_atom("sd_" ++ integer_to_list(UserID)).
 
 %%
-ensure_player(UID) ->
-    case pid(UID) of
+ensure_player(UserID) ->
+    case pid(UserID) of
         Pid when is_pid(Pid) ->
             {ok, reconnect, Pid};
         _ ->    %% 新建进程
-            case player_gsvr:start(UID) of
+            case player_gsvr:start(UserID) of
                 {ok, Pid} ->
                     {ok, connect, Pid};
                 _E ->
@@ -66,3 +66,4 @@ ensure_player(UID) ->
                     ?false
             end
     end.
+

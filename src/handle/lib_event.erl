@@ -9,7 +9,7 @@
 -module(lib_event).
 -author("Administrator").
 
--include("record.hrl").
+-include("hrl_player.hrl").
 -include("hrl_common.hrl").
 -include("hrl_logs.hrl").
 -include("hrl_event.hrl").
@@ -33,9 +33,9 @@
 
 %% 事件触发call
 %% Call玩家进程, 必须非常小心, 使用此接口必须进行code review
-trigger_call(UUID, EvtID, Content) when is_integer(UUID) ->
+trigger_call(UserID, EvtID, Content) when is_integer(UserID) ->
     ?true = (player =/= erlang:get(process_type)), % 不允许从player进程call
-    gen_server:call(player_api:pid(UUID), {route_evt, EvtID, Content});
+    gen_server:call(player_api:pid(UserID), {route_evt, EvtID, Content});
 trigger_call(Pid, EvtID, Content) when is_pid(Pid) ->
     ?true = (player =/= erlang:get(process_type)), % 不允许从player进程call
     gen_server:call(Pid, {route_evt, EvtID, Content});
@@ -51,13 +51,13 @@ trigger_event(EvtID, Content) ->
         player ->
             gen_server:cast(self(), {route_evt, EvtID, Content});
         _ ->
-            ?NOTICE("trigger event need UUID ~p", [xg_util:get_call_stack()])
+            ?NOTICE("trigger event need UserID ~p", [xg_util:get_call_stack()])
     end.
 
 
 %% 事件触发cast
-trigger_event(UUID, EvtID, Content) when is_integer(UUID) ->
-    gen_server:cast(player_api:pid(UUID), {route_evt, EvtID, Content});
+trigger_event(UserID, EvtID, Content) when is_integer(UserID) ->
+    gen_server:cast(player_api:pid(UserID), {route_evt, EvtID, Content});
 trigger_event(Pid, EvtID, Content) when is_pid(Pid) ->
     gen_server:cast(Pid, {route_evt, EvtID, Content});
 trigger_event({Name, Node} = Pid, EvtID, Content)
@@ -69,8 +69,8 @@ trigger_event(Other, EvtID, Content) ->
 
 
 %% 延迟事件触发
-trigger_after(Time, UUID, EvtID, Content) when is_integer(UUID) ->
-    trigger_after(Time, player_api:pid(UUID), EvtID, Content);
+trigger_after(Time, UserID, EvtID, Content) when is_integer(UserID) ->
+    trigger_after(Time, player_api:pid(UserID), EvtID, Content);
 trigger_after(0, Target, EvtID, Content) ->
     trigger_event(Target, EvtID, Content);
 trigger_after(Time, {Name, Node}, EvtID, Content) when Node =:= node() ->
@@ -97,14 +97,14 @@ cancel_trigger(_) ->
 %%%% 可离线事件
 %%off_event(0, _EvtID, _Content) ->
 %%    ok;
-%%off_event(UUID, EvtID, Content) ->
-%%    case player_api:pid(UUID) of
+%%off_event(UserID, EvtID, Content) ->
+%%    case player_api:pid(UserID) of
 %%        ?undefined ->
-%%            xg_offevent_svr:event(UUID, EvtID, Content);
+%%            xg_offevent_svr:event(UserID, EvtID, Content);
 %%        Pid when is_pid(Pid) ->
 %%            trigger_event(Pid, EvtID, Content);
 %%        _E ->
-%%            ?WARNING("~p not in this node, EvtID=~p", [UUID, EvtID]),
+%%            ?WARNING("~p not in this node, EvtID=~p", [UserID, EvtID]),
 %%            ok
 %%    end.
 
@@ -113,8 +113,8 @@ cancel_trigger(_) ->
 tevent(EvtID, Content, #player{tevents = TEvents} = Player) ->
     Player#player{tevents = [{EvtID, Content} | TEvents]}.
 
-tevent(UUID, EvtID, Content, #player{tevents = TEvents} = Player) ->
-    Player#player{tevents = [{UUID, EvtID, Content} | TEvents]}.
+tevent(UserID, EvtID, Content, #player{tevents = TEvents} = Player) ->
+    Player#player{tevents = [{UserID, EvtID, Content} | TEvents]}.
 
 tgen_cast(Dest, Request, Player) ->
     tevent(?EVT_PLAYER_TCAST, {Dest, Request}, Player).
@@ -129,6 +129,6 @@ do_world_event(Group, EvtID, Content) ->
     group_api:mcast({route_evt, EvtID, Content}, Group, Slots),
     ok.
 
-join_world(UUID) ->
-    Slot = UUID rem ?WORLD_SLOTS + 1,
+join_world(UserID) ->
+    Slot = UserID rem ?WORLD_SLOTS + 1,
     group_api:join(self(), world_player, Slot).

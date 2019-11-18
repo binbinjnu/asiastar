@@ -28,7 +28,7 @@ route_evt(MsgID, Data, State) ->
 
 %% 消息路由
 msg_mod(MsgID) ->
-    case MsgID div 1000 of
+    case MsgID div 100 of
         100 -> handle_login;
         101 -> handle_player;
         _ ->  handle_err

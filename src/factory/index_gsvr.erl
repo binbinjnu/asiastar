@@ -2,7 +2,7 @@
 %%% @author Administrator
 %%% @copyright (C) 2019, <COMPANY>
 %%% @doc
-%%%     自增id
+%%%     自增id todo 定时同步数据库
 %%% @end
 %%% Created : 16. 11月 2019 13:04
 %%%-------------------------------------------------------------------
@@ -97,16 +97,21 @@ init_index() ->
 
 %% 初始化user_id
 init_user_id() ->
-    MaxExistUserID = db_mysql_api:select_user_master_max_user_id(),
-    LimitUserID = max(MaxExistUserID, 65536),
-    case ets:lookup(?ETS_TAB, user_id) of
-        [{_, Value}] when Value >= LimitUserID ->
-            ok;
+    case db_mysql_api:select_user_master_max_user_id() of
+        {ok, MaxExistUserID} ->
+            MaxExistUserID1 = ?IF(erlang:is_integer(MaxExistUserID), MaxExistUserID, 0),
+            LimitUserID = max(MaxExistUserID1, 65536),
+            case ets:lookup(?ETS_TAB, user_id) of
+                [{_, Value}] when Value >= LimitUserID ->
+                    ok;
+                _ ->
+                    ?NOTICE("Index ~p is inited with number ~w", [user_id, LimitUserID]),
+                    ets:insert(?ETS_TAB, {user_id, LimitUserID})
+            end;
         _ ->
-            ?INFO("Index ~p is inited with number ~w", [user_id, LimitUserID]),
-            ets:insert(?ETS_TAB, {user_id, LimitUserID})
-    end,
-    ok.
+            ?WARNING("can not get user master max user id!"),
+            ok
+    end.
 
 init_index(Key, Init) when is_integer(Init)->
     case ets:lookup(?ETS_TAB, Key)  of

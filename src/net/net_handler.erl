@@ -54,9 +54,8 @@ get_tcp_socket(SPid) ->
 
 init(Socket) ->
     erlang:process_flag(max_heap_size, ?MAX_HEAP_SIZE),
-    erlang:put(sender_pid, self()),
-%%    lib_send:set_sender(self()),
     erlang:put(process_type, sender),
+    lib_send:set_spid(self()),
     PeerName = socket2peername(Socket),
     ?INFO("PeerName:~w", [PeerName]),
     #handler_state{
@@ -66,6 +65,7 @@ init(Socket) ->
     }.
 
 
+%% socket转ip
 socket2peername(?undefined) ->
     {{0, 0, 0, 0}, 0};
 socket2peername(Socket) ->
@@ -80,11 +80,13 @@ socket2peername(Socket) ->
 
 handle(Bin, #handler_state{debug_pid = Pid} = HState) ->
     ?REC_MSG(recv, Bin),
+%%    ?NOTICE("Bin:~w", [Bin]),
     case is_pid(Pid) of
         ?true -> Pid ! {recv, Bin};
         _ -> ok
     end,
     Packets = net_pack:unpacks(Bin),
+%%    ?NOTICE("Packets:~w", [Packets]),
     HState1 = handle_1(Packets, HState),
     HState1.
 

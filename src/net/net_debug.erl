@@ -129,7 +129,7 @@ write_msgs(Recs) ->
     end.
 
 reverse_msgs([H | T], Acc) ->
-    Rec = [util:term_to_bitstring(H), "\n"],
+    Rec = [util_code:term_to_bitstring(H), "\n"],
     Acc1 = [Rec | Acc],
     reverse_msgs(T, Acc1);
 reverse_msgs([], Acc) ->
@@ -137,5 +137,4 @@ reverse_msgs([], Acc) ->
 
 
 is_ignore_msg(0) -> ?true;
-is_ignore_msg(?c2s_hello) -> ?true;
 is_ignore_msg(_) -> ?false.

@@ -92,7 +92,7 @@ init(Ref, Socket, Transport, Opts) ->
     ok = ranch:accept_ack(Ref),
     ok = Transport:setopts(Socket, [{active, true} | ?TCP_OPTIONS]),
     erlang:put(net_tcp_socket, Socket),
-    RandInterval = util:rand(0, ?NET_STAT_INTERVAL * 1000),
+    RandInterval = util_math:rand(0, ?NET_STAT_INTERVAL * 1000),
     Stat = #stat{rec_time = util_time:long_unixtime() + RandInterval},
     State =
         #net_state{
@@ -170,7 +170,7 @@ handle_info({tcp, Socket, Data}, #net_state{socket = Socket, socket_type = webso
     {noreply, State#net_state{socket_type = tcp}};
 
 handle_info({tcp, Socket, Data}, #net_state{socket = Socket, socket_type = tcp} = State) ->
-    ?NOTICE("Data:~w", [Data]),
+%%    ?NOTICE("Data:~w", [Data]),
     State1 = water_down(State),
     case net_data(Data, State1) of
         {ok, State2} ->

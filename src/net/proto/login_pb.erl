@@ -201,133 +201,15 @@ encode_msg_s2c_login(Msg, TrUserData) ->
     encode_msg_s2c_login(Msg, <<>>, TrUserData).
 
 
-encode_msg_s2c_login(#s2c_login{iCode = F1,
-				iUserID = F2, iBindMobile = F3,
-				sPhoneNumber = F4, sNickName = F5, iIcon = F6,
-				sSelfPhoto = F7, iMemberLevel = F8,
-				iSpreaderID = F9, iExp = F10, iGameCoin = F11,
-				iBankCoin = F12},
-		     Bin, TrUserData) ->
-    B1 = if F1 == undefined -> Bin;
-	    true ->
-		begin
-		  TrF1 = id(F1, TrUserData),
-		  if TrF1 =:= 0 -> Bin;
-		     true ->
-			 e_type_int32(TrF1, <<Bin/binary, 8>>, TrUserData)
-		  end
-		end
-	 end,
-    B2 = if F2 == undefined -> B1;
-	    true ->
-		begin
-		  TrF2 = id(F2, TrUserData),
-		  if TrF2 =:= 0 -> B1;
-		     true ->
-			 e_type_int32(TrF2, <<B1/binary, 16>>, TrUserData)
-		  end
-		end
-	 end,
-    B3 = if F3 == undefined -> B2;
-	    true ->
-		begin
-		  TrF3 = id(F3, TrUserData),
-		  if TrF3 =:= 0 -> B2;
-		     true ->
-			 e_type_int32(TrF3, <<B2/binary, 24>>, TrUserData)
-		  end
-		end
-	 end,
-    B4 = if F4 == undefined -> B3;
-	    true ->
-		begin
-		  TrF4 = id(F4, TrUserData),
-		  case is_empty_string(TrF4) of
-		    true -> B3;
-		    false ->
-			e_type_string(TrF4, <<B3/binary, 34>>, TrUserData)
-		  end
-		end
-	 end,
-    B5 = if F5 == undefined -> B4;
-	    true ->
-		begin
-		  TrF5 = id(F5, TrUserData),
-		  case is_empty_string(TrF5) of
-		    true -> B4;
-		    false ->
-			e_type_string(TrF5, <<B4/binary, 42>>, TrUserData)
-		  end
-		end
-	 end,
-    B6 = if F6 == undefined -> B5;
-	    true ->
-		begin
-		  TrF6 = id(F6, TrUserData),
-		  if TrF6 =:= 0 -> B5;
-		     true ->
-			 e_type_int32(TrF6, <<B5/binary, 48>>, TrUserData)
-		  end
-		end
-	 end,
-    B7 = if F7 == undefined -> B6;
-	    true ->
-		begin
-		  TrF7 = id(F7, TrUserData),
-		  case is_empty_string(TrF7) of
-		    true -> B6;
-		    false ->
-			e_type_string(TrF7, <<B6/binary, 58>>, TrUserData)
-		  end
-		end
-	 end,
-    B8 = if F8 == undefined -> B7;
-	    true ->
-		begin
-		  TrF8 = id(F8, TrUserData),
-		  if TrF8 =:= 0 -> B7;
-		     true ->
-			 e_type_int32(TrF8, <<B7/binary, 64>>, TrUserData)
-		  end
-		end
-	 end,
-    B9 = if F9 == undefined -> B8;
-	    true ->
-		begin
-		  TrF9 = id(F9, TrUserData),
-		  if TrF9 =:= 0 -> B8;
-		     true ->
-			 e_type_int32(TrF9, <<B8/binary, 72>>, TrUserData)
-		  end
-		end
-	 end,
-    B10 = if F10 == undefined -> B9;
-	     true ->
-		 begin
-		   TrF10 = id(F10, TrUserData),
-		   if TrF10 =:= 0 -> B9;
-		      true ->
-			  e_type_int32(TrF10, <<B9/binary, 80>>, TrUserData)
-		   end
-		 end
-	  end,
-    B11 = if F11 == undefined -> B10;
-	     true ->
-		 begin
-		   TrF11 = id(F11, TrUserData),
-		   if TrF11 =:= 0 -> B10;
-		      true ->
-			  e_type_int64(TrF11, <<B10/binary, 88>>, TrUserData)
-		   end
-		 end
-	  end,
-    if F12 == undefined -> B11;
+encode_msg_s2c_login(#s2c_login{iCode = F1}, Bin,
+		     TrUserData) ->
+    if F1 == undefined -> Bin;
        true ->
 	   begin
-	     TrF12 = id(F12, TrUserData),
-	     if TrF12 =:= 0 -> B11;
+	     TrF1 = id(F1, TrUserData),
+	     if TrF1 =:= 0 -> Bin;
 		true ->
-		    e_type_int64(TrF12, <<B11/binary, 96>>, TrUserData)
+		    e_type_int32(TrF1, <<Bin/binary, 8>>, TrUserData)
 	     end
 	   end
     end.
@@ -944,205 +826,53 @@ skip_64_c2s_login(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
 
 decode_msg_s2c_login(Bin, TrUserData) ->
     dfp_read_field_def_s2c_login(Bin, 0, 0,
-				 id(0, TrUserData), id(0, TrUserData),
-				 id(0, TrUserData), id(<<>>, TrUserData),
-				 id(<<>>, TrUserData), id(0, TrUserData),
-				 id(<<>>, TrUserData), id(0, TrUserData),
-				 id(0, TrUserData), id(0, TrUserData),
-				 id(0, TrUserData), id(0, TrUserData),
-				 TrUserData).
+				 id(0, TrUserData), TrUserData).
 
 dfp_read_field_def_s2c_login(<<8, Rest/binary>>, Z1, Z2,
-			     F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_iCode(Rest, Z1, Z2, F@_1, F@_2, F@_3,
-			    F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10, F@_11,
-			    F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<16, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_iUserID(Rest, Z1, Z2, F@_1, F@_2,
-			      F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-			      F@_11, F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<24, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_iBindMobile(Rest, Z1, Z2, F@_1, F@_2,
-				  F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				  F@_10, F@_11, F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<34, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_sPhoneNumber(Rest, Z1, Z2, F@_1, F@_2,
-				   F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				   F@_10, F@_11, F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<42, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_sNickName(Rest, Z1, Z2, F@_1, F@_2,
-				F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-				F@_11, F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<48, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_iIcon(Rest, Z1, Z2, F@_1, F@_2, F@_3,
-			    F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10, F@_11,
-			    F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<58, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_sSelfPhoto(Rest, Z1, Z2, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<64, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_iMemberLevel(Rest, Z1, Z2, F@_1, F@_2,
-				   F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				   F@_10, F@_11, F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<72, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_iSpreaderID(Rest, Z1, Z2, F@_1, F@_2,
-				  F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				  F@_10, F@_11, F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<80, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_iExp(Rest, Z1, Z2, F@_1, F@_2, F@_3,
-			   F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10, F@_11,
-			   F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<88, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_iGameCoin(Rest, Z1, Z2, F@_1, F@_2,
-				F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-				F@_11, F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<96, Rest/binary>>, Z1,
-			     Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			     F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    d_field_s2c_login_iBankCoin(Rest, Z1, Z2, F@_1, F@_2,
-				F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-				F@_11, F@_12, TrUserData);
-dfp_read_field_def_s2c_login(<<>>, 0, 0, F@_1, F@_2,
-			     F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-			     F@_11, F@_12, _) ->
-    #s2c_login{iCode = F@_1, iUserID = F@_2,
-	       iBindMobile = F@_3, sPhoneNumber = F@_4,
-	       sNickName = F@_5, iIcon = F@_6, sSelfPhoto = F@_7,
-	       iMemberLevel = F@_8, iSpreaderID = F@_9, iExp = F@_10,
-	       iGameCoin = F@_11, iBankCoin = F@_12};
-dfp_read_field_def_s2c_login(Other, Z1, Z2, F@_1, F@_2,
-			     F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-			     F@_11, F@_12, TrUserData) ->
-    dg_read_field_def_s2c_login(Other, Z1, Z2, F@_1, F@_2,
-				F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-				F@_11, F@_12, TrUserData).
+			     F@_1, TrUserData) ->
+    d_field_s2c_login_iCode(Rest, Z1, Z2, F@_1, TrUserData);
+dfp_read_field_def_s2c_login(<<>>, 0, 0, F@_1, _) ->
+    #s2c_login{iCode = F@_1};
+dfp_read_field_def_s2c_login(Other, Z1, Z2, F@_1,
+			     TrUserData) ->
+    dg_read_field_def_s2c_login(Other, Z1, Z2, F@_1,
+				TrUserData).
 
 dg_read_field_def_s2c_login(<<1:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			    F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData)
+			    N, Acc, F@_1, TrUserData)
     when N < 32 - 7 ->
     dg_read_field_def_s2c_login(Rest, N + 7, X bsl N + Acc,
-				F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-				F@_9, F@_10, F@_11, F@_12, TrUserData);
+				F@_1, TrUserData);
 dg_read_field_def_s2c_login(<<0:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			    F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData) ->
+			    N, Acc, F@_1, TrUserData) ->
     Key = X bsl N + Acc,
     case Key of
       8 ->
-	  d_field_s2c_login_iCode(Rest, 0, 0, F@_1, F@_2, F@_3,
-				  F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-				  F@_11, F@_12, TrUserData);
-      16 ->
-	  d_field_s2c_login_iUserID(Rest, 0, 0, F@_1, F@_2, F@_3,
-				    F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-				    F@_11, F@_12, TrUserData);
-      24 ->
-	  d_field_s2c_login_iBindMobile(Rest, 0, 0, F@_1, F@_2,
-					F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-					F@_9, F@_10, F@_11, F@_12, TrUserData);
-      34 ->
-	  d_field_s2c_login_sPhoneNumber(Rest, 0, 0, F@_1, F@_2,
-					 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-					 F@_9, F@_10, F@_11, F@_12, TrUserData);
-      42 ->
-	  d_field_s2c_login_sNickName(Rest, 0, 0, F@_1, F@_2,
-				      F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				      F@_10, F@_11, F@_12, TrUserData);
-      48 ->
-	  d_field_s2c_login_iIcon(Rest, 0, 0, F@_1, F@_2, F@_3,
-				  F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-				  F@_11, F@_12, TrUserData);
-      58 ->
-	  d_field_s2c_login_sSelfPhoto(Rest, 0, 0, F@_1, F@_2,
-				       F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				       F@_10, F@_11, F@_12, TrUserData);
-      64 ->
-	  d_field_s2c_login_iMemberLevel(Rest, 0, 0, F@_1, F@_2,
-					 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-					 F@_9, F@_10, F@_11, F@_12, TrUserData);
-      72 ->
-	  d_field_s2c_login_iSpreaderID(Rest, 0, 0, F@_1, F@_2,
-					F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-					F@_9, F@_10, F@_11, F@_12, TrUserData);
-      80 ->
-	  d_field_s2c_login_iExp(Rest, 0, 0, F@_1, F@_2, F@_3,
-				 F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-				 F@_11, F@_12, TrUserData);
-      88 ->
-	  d_field_s2c_login_iGameCoin(Rest, 0, 0, F@_1, F@_2,
-				      F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				      F@_10, F@_11, F@_12, TrUserData);
-      96 ->
-	  d_field_s2c_login_iBankCoin(Rest, 0, 0, F@_1, F@_2,
-				      F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				      F@_10, F@_11, F@_12, TrUserData);
+	  d_field_s2c_login_iCode(Rest, 0, 0, F@_1, TrUserData);
       _ ->
 	  case Key band 7 of
 	    0 ->
-		skip_varint_s2c_login(Rest, 0, 0, F@_1, F@_2, F@_3,
-				      F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-				      F@_11, F@_12, TrUserData);
-	    1 ->
-		skip_64_s2c_login(Rest, 0, 0, F@_1, F@_2, F@_3, F@_4,
-				  F@_5, F@_6, F@_7, F@_8, F@_9, F@_10, F@_11,
-				  F@_12, TrUserData);
+		skip_varint_s2c_login(Rest, 0, 0, F@_1, TrUserData);
+	    1 -> skip_64_s2c_login(Rest, 0, 0, F@_1, TrUserData);
 	    2 ->
-		skip_length_delimited_s2c_login(Rest, 0, 0, F@_1, F@_2,
-						F@_3, F@_4, F@_5, F@_6, F@_7,
-						F@_8, F@_9, F@_10, F@_11, F@_12,
+		skip_length_delimited_s2c_login(Rest, 0, 0, F@_1,
 						TrUserData);
 	    3 ->
-		skip_group_s2c_login(Rest, Key bsr 3, 0, F@_1, F@_2,
-				     F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				     F@_10, F@_11, F@_12, TrUserData);
-	    5 ->
-		skip_32_s2c_login(Rest, 0, 0, F@_1, F@_2, F@_3, F@_4,
-				  F@_5, F@_6, F@_7, F@_8, F@_9, F@_10, F@_11,
-				  F@_12, TrUserData)
+		skip_group_s2c_login(Rest, Key bsr 3, 0, F@_1,
+				     TrUserData);
+	    5 -> skip_32_s2c_login(Rest, 0, 0, F@_1, TrUserData)
 	  end
     end;
-dg_read_field_def_s2c_login(<<>>, 0, 0, F@_1, F@_2,
-			    F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-			    F@_11, F@_12, _) ->
-    #s2c_login{iCode = F@_1, iUserID = F@_2,
-	       iBindMobile = F@_3, sPhoneNumber = F@_4,
-	       sNickName = F@_5, iIcon = F@_6, sSelfPhoto = F@_7,
-	       iMemberLevel = F@_8, iSpreaderID = F@_9, iExp = F@_10,
-	       iGameCoin = F@_11, iBankCoin = F@_12}.
+dg_read_field_def_s2c_login(<<>>, 0, 0, F@_1, _) ->
+    #s2c_login{iCode = F@_1}.
 
 d_field_s2c_login_iCode(<<1:1, X:7, Rest/binary>>, N,
-			Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			F@_9, F@_10, F@_11, F@_12, TrUserData)
+			Acc, F@_1, TrUserData)
     when N < 57 ->
     d_field_s2c_login_iCode(Rest, N + 7, X bsl N + Acc,
-			    F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			    F@_9, F@_10, F@_11, F@_12, TrUserData);
+			    F@_1, TrUserData);
 d_field_s2c_login_iCode(<<0:1, X:7, Rest/binary>>, N,
-			Acc, _, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-			F@_10, F@_11, F@_12, TrUserData) ->
+			Acc, _, TrUserData) ->
     {NewFValue, RestF} = {begin
 			    <<Res:32/signed-native>> = <<(X bsl N +
 							    Acc):32/unsigned-native>>,
@@ -1150,289 +880,44 @@ d_field_s2c_login_iCode(<<0:1, X:7, Rest/binary>>, N,
 			  end,
 			  Rest},
     dfp_read_field_def_s2c_login(RestF, 0, 0, NewFValue,
-				 F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_iUserID(<<1:1, X:7, Rest/binary>>, N,
-			  Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			  F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_iUserID(Rest, N + 7, X bsl N + Acc,
-			      F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			      F@_9, F@_10, F@_11, F@_12, TrUserData);
-d_field_s2c_login_iUserID(<<0:1, X:7, Rest/binary>>, N,
-			  Acc, F@_1, _, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			  F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    {NewFValue, RestF} = {begin
-			    <<Res:32/signed-native>> = <<(X bsl N +
-							    Acc):32/unsigned-native>>,
-			    id(Res, TrUserData)
-			  end,
-			  Rest},
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1,
-				 NewFValue, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-				 F@_9, F@_10, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_iBindMobile(<<1:1, X:7, Rest/binary>>,
-			      N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			      F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_iBindMobile(Rest, N + 7,
-				  X bsl N + Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				  F@_6, F@_7, F@_8, F@_9, F@_10, F@_11, F@_12,
-				  TrUserData);
-d_field_s2c_login_iBindMobile(<<0:1, X:7, Rest/binary>>,
-			      N, Acc, F@_1, F@_2, _, F@_4, F@_5, F@_6, F@_7,
-			      F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    {NewFValue, RestF} = {begin
-			    <<Res:32/signed-native>> = <<(X bsl N +
-							    Acc):32/unsigned-native>>,
-			    id(Res, TrUserData)
-			  end,
-			  Rest},
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 NewFValue, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_sPhoneNumber(<<1:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			       F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_sPhoneNumber(Rest, N + 7,
-				   X bsl N + Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				   F@_6, F@_7, F@_8, F@_9, F@_10, F@_11, F@_12,
-				   TrUserData);
-d_field_s2c_login_sPhoneNumber(<<0:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, F@_3, _, F@_5, F@_6, F@_7,
-			       F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    {NewFValue, RestF} = begin
-			   Len = X bsl N + Acc,
-			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
-			   {id(binary:copy(Bytes), TrUserData), Rest2}
-			 end,
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 F@_3, NewFValue, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_sNickName(<<1:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			    F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_sNickName(Rest, N + 7, X bsl N + Acc,
-				F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-				F@_9, F@_10, F@_11, F@_12, TrUserData);
-d_field_s2c_login_sNickName(<<0:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, F@_4, _, F@_6, F@_7, F@_8,
-			    F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    {NewFValue, RestF} = begin
-			   Len = X bsl N + Acc,
-			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
-			   {id(binary:copy(Bytes), TrUserData), Rest2}
-			 end,
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 F@_3, F@_4, NewFValue, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_iIcon(<<1:1, X:7, Rest/binary>>, N,
-			Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_iIcon(Rest, N + 7, X bsl N + Acc,
-			    F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-			    F@_9, F@_10, F@_11, F@_12, TrUserData);
-d_field_s2c_login_iIcon(<<0:1, X:7, Rest/binary>>, N,
-			Acc, F@_1, F@_2, F@_3, F@_4, F@_5, _, F@_7, F@_8, F@_9,
-			F@_10, F@_11, F@_12, TrUserData) ->
-    {NewFValue, RestF} = {begin
-			    <<Res:32/signed-native>> = <<(X bsl N +
-							    Acc):32/unsigned-native>>,
-			    id(Res, TrUserData)
-			  end,
-			  Rest},
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, NewFValue, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_sSelfPhoto(<<1:1, X:7, Rest/binary>>,
-			     N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			     F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_sSelfPhoto(Rest, N + 7, X bsl N + Acc,
-				 F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-				 F@_9, F@_10, F@_11, F@_12, TrUserData);
-d_field_s2c_login_sSelfPhoto(<<0:1, X:7, Rest/binary>>,
-			     N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, _,
-			     F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    {NewFValue, RestF} = begin
-			   Len = X bsl N + Acc,
-			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
-			   {id(binary:copy(Bytes), TrUserData), Rest2}
-			 end,
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, NewFValue, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_iMemberLevel(<<1:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			       F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_iMemberLevel(Rest, N + 7,
-				   X bsl N + Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				   F@_6, F@_7, F@_8, F@_9, F@_10, F@_11, F@_12,
-				   TrUserData);
-d_field_s2c_login_iMemberLevel(<<0:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			       _, F@_9, F@_10, F@_11, F@_12, TrUserData) ->
-    {NewFValue, RestF} = {begin
-			    <<Res:32/signed-native>> = <<(X bsl N +
-							    Acc):32/unsigned-native>>,
-			    id(Res, TrUserData)
-			  end,
-			  Rest},
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, NewFValue, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_iSpreaderID(<<1:1, X:7, Rest/binary>>,
-			      N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			      F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_iSpreaderID(Rest, N + 7,
-				  X bsl N + Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				  F@_6, F@_7, F@_8, F@_9, F@_10, F@_11, F@_12,
-				  TrUserData);
-d_field_s2c_login_iSpreaderID(<<0:1, X:7, Rest/binary>>,
-			      N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			      F@_8, _, F@_10, F@_11, F@_12, TrUserData) ->
-    {NewFValue, RestF} = {begin
-			    <<Res:32/signed-native>> = <<(X bsl N +
-							    Acc):32/unsigned-native>>,
-			    id(Res, TrUserData)
-			  end,
-			  Rest},
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, NewFValue,
-				 F@_10, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_iExp(<<1:1, X:7, Rest/binary>>, N,
-		       Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-		       F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_iExp(Rest, N + 7, X bsl N + Acc, F@_1,
-			   F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-			   F@_10, F@_11, F@_12, TrUserData);
-d_field_s2c_login_iExp(<<0:1, X:7, Rest/binary>>, N,
-		       Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-		       F@_9, _, F@_11, F@_12, TrUserData) ->
-    {NewFValue, RestF} = {begin
-			    <<Res:32/signed-native>> = <<(X bsl N +
-							    Acc):32/unsigned-native>>,
-			    id(Res, TrUserData)
-			  end,
-			  Rest},
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 NewFValue, F@_11, F@_12, TrUserData).
-
-d_field_s2c_login_iGameCoin(<<1:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			    F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_iGameCoin(Rest, N + 7, X bsl N + Acc,
-				F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-				F@_9, F@_10, F@_11, F@_12, TrUserData);
-d_field_s2c_login_iGameCoin(<<0:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			    F@_8, F@_9, F@_10, _, F@_12, TrUserData) ->
-    {NewFValue, RestF} = {begin
-			    <<Res:64/signed-native>> = <<(X bsl N +
-							    Acc):64/unsigned-native>>,
-			    id(Res, TrUserData)
-			  end,
-			  Rest},
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, NewFValue, F@_12, TrUserData).
-
-d_field_s2c_login_iBankCoin(<<1:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			    F@_8, F@_9, F@_10, F@_11, F@_12, TrUserData)
-    when N < 57 ->
-    d_field_s2c_login_iBankCoin(Rest, N + 7, X bsl N + Acc,
-				F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8,
-				F@_9, F@_10, F@_11, F@_12, TrUserData);
-d_field_s2c_login_iBankCoin(<<0:1, X:7, Rest/binary>>,
-			    N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
-			    F@_8, F@_9, F@_10, F@_11, _, TrUserData) ->
-    {NewFValue, RestF} = {begin
-			    <<Res:64/signed-native>> = <<(X bsl N +
-							    Acc):64/unsigned-native>>,
-			    id(Res, TrUserData)
-			  end,
-			  Rest},
-    dfp_read_field_def_s2c_login(RestF, 0, 0, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, NewFValue, TrUserData).
+				 TrUserData).
 
 skip_varint_s2c_login(<<1:1, _:7, Rest/binary>>, Z1, Z2,
-		      F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-		      F@_10, F@_11, F@_12, TrUserData) ->
-    skip_varint_s2c_login(Rest, Z1, Z2, F@_1, F@_2, F@_3,
-			  F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10, F@_11,
-			  F@_12, TrUserData);
+		      F@_1, TrUserData) ->
+    skip_varint_s2c_login(Rest, Z1, Z2, F@_1, TrUserData);
 skip_varint_s2c_login(<<0:1, _:7, Rest/binary>>, Z1, Z2,
-		      F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-		      F@_10, F@_11, F@_12, TrUserData) ->
-    dfp_read_field_def_s2c_login(Rest, Z1, Z2, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
+		      F@_1, TrUserData) ->
+    dfp_read_field_def_s2c_login(Rest, Z1, Z2, F@_1,
+				 TrUserData).
 
 skip_length_delimited_s2c_login(<<1:1, X:7,
 				  Rest/binary>>,
-				N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
-				F@_7, F@_8, F@_9, F@_10, F@_11, F@_12,
-				TrUserData)
+				N, Acc, F@_1, TrUserData)
     when N < 57 ->
     skip_length_delimited_s2c_login(Rest, N + 7,
-				    X bsl N + Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				    F@_6, F@_7, F@_8, F@_9, F@_10, F@_11, F@_12,
-				    TrUserData);
+				    X bsl N + Acc, F@_1, TrUserData);
 skip_length_delimited_s2c_login(<<0:1, X:7,
 				  Rest/binary>>,
-				N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
-				F@_7, F@_8, F@_9, F@_10, F@_11, F@_12,
-				TrUserData) ->
+				N, Acc, F@_1, TrUserData) ->
     Length = X bsl N + Acc,
     <<_:Length/binary, Rest2/binary>> = Rest,
-    dfp_read_field_def_s2c_login(Rest2, 0, 0, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
+    dfp_read_field_def_s2c_login(Rest2, 0, 0, F@_1,
+				 TrUserData).
 
-skip_group_s2c_login(Bin, FNum, Z2, F@_1, F@_2, F@_3,
-		     F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10, F@_11, F@_12,
-		     TrUserData) ->
+skip_group_s2c_login(Bin, FNum, Z2, F@_1, TrUserData) ->
     {_, Rest} = read_group(Bin, FNum),
-    dfp_read_field_def_s2c_login(Rest, 0, Z2, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
+    dfp_read_field_def_s2c_login(Rest, 0, Z2, F@_1,
+				 TrUserData).
 
 skip_32_s2c_login(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
-		  F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-		  F@_11, F@_12, TrUserData) ->
-    dfp_read_field_def_s2c_login(Rest, Z1, Z2, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
+		  TrUserData) ->
+    dfp_read_field_def_s2c_login(Rest, Z1, Z2, F@_1,
+				 TrUserData).
 
 skip_64_s2c_login(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
-		  F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9, F@_10,
-		  F@_11, F@_12, TrUserData) ->
-    dfp_read_field_def_s2c_login(Rest, Z1, Z2, F@_1, F@_2,
-				 F@_3, F@_4, F@_5, F@_6, F@_7, F@_8, F@_9,
-				 F@_10, F@_11, F@_12, TrUserData).
+		  TrUserData) ->
+    dfp_read_field_def_s2c_login(Rest, Z1, Z2, F@_1,
+				 TrUserData).
 
 read_group(Bin, FieldNum) ->
     {NumBytes, EndTagLen} = read_gr_b(Bin, 0, 0, 0, 0, FieldNum),
@@ -1568,72 +1053,11 @@ merge_msg_c2s_login(#c2s_login{iSiteID = PFiSiteID,
 		   end}.
 
 -compile({nowarn_unused_function,merge_msg_s2c_login/3}).
-merge_msg_s2c_login(#s2c_login{iCode = PFiCode,
-			       iUserID = PFiUserID, iBindMobile = PFiBindMobile,
-			       sPhoneNumber = PFsPhoneNumber,
-			       sNickName = PFsNickName, iIcon = PFiIcon,
-			       sSelfPhoto = PFsSelfPhoto,
-			       iMemberLevel = PFiMemberLevel,
-			       iSpreaderID = PFiSpreaderID, iExp = PFiExp,
-			       iGameCoin = PFiGameCoin,
-			       iBankCoin = PFiBankCoin},
-		    #s2c_login{iCode = NFiCode, iUserID = NFiUserID,
-			       iBindMobile = NFiBindMobile,
-			       sPhoneNumber = NFsPhoneNumber,
-			       sNickName = NFsNickName, iIcon = NFiIcon,
-			       sSelfPhoto = NFsSelfPhoto,
-			       iMemberLevel = NFiMemberLevel,
-			       iSpreaderID = NFiSpreaderID, iExp = NFiExp,
-			       iGameCoin = NFiGameCoin,
-			       iBankCoin = NFiBankCoin},
-		    _) ->
+merge_msg_s2c_login(#s2c_login{iCode = PFiCode},
+		    #s2c_login{iCode = NFiCode}, _) ->
     #s2c_login{iCode =
 		   if NFiCode =:= undefined -> PFiCode;
 		      true -> NFiCode
-		   end,
-	       iUserID =
-		   if NFiUserID =:= undefined -> PFiUserID;
-		      true -> NFiUserID
-		   end,
-	       iBindMobile =
-		   if NFiBindMobile =:= undefined -> PFiBindMobile;
-		      true -> NFiBindMobile
-		   end,
-	       sPhoneNumber =
-		   if NFsPhoneNumber =:= undefined -> PFsPhoneNumber;
-		      true -> NFsPhoneNumber
-		   end,
-	       sNickName =
-		   if NFsNickName =:= undefined -> PFsNickName;
-		      true -> NFsNickName
-		   end,
-	       iIcon =
-		   if NFiIcon =:= undefined -> PFiIcon;
-		      true -> NFiIcon
-		   end,
-	       sSelfPhoto =
-		   if NFsSelfPhoto =:= undefined -> PFsSelfPhoto;
-		      true -> NFsSelfPhoto
-		   end,
-	       iMemberLevel =
-		   if NFiMemberLevel =:= undefined -> PFiMemberLevel;
-		      true -> NFiMemberLevel
-		   end,
-	       iSpreaderID =
-		   if NFiSpreaderID =:= undefined -> PFiSpreaderID;
-		      true -> NFiSpreaderID
-		   end,
-	       iExp =
-		   if NFiExp =:= undefined -> PFiExp;
-		      true -> NFiExp
-		   end,
-	       iGameCoin =
-		   if NFiGameCoin =:= undefined -> PFiGameCoin;
-		      true -> NFiGameCoin
-		   end,
-	       iBankCoin =
-		   if NFiBankCoin =:= undefined -> PFiBankCoin;
-		      true -> NFiBankCoin
 		   end}.
 
 
@@ -1717,55 +1141,10 @@ v_msg_c2s_login(X, Path, _TrUserData) ->
 
 -compile({nowarn_unused_function,v_msg_s2c_login/3}).
 -dialyzer({nowarn_function,v_msg_s2c_login/3}).
-v_msg_s2c_login(#s2c_login{iCode = F1, iUserID = F2,
-			   iBindMobile = F3, sPhoneNumber = F4, sNickName = F5,
-			   iIcon = F6, sSelfPhoto = F7, iMemberLevel = F8,
-			   iSpreaderID = F9, iExp = F10, iGameCoin = F11,
-			   iBankCoin = F12},
-		Path, TrUserData) ->
+v_msg_s2c_login(#s2c_login{iCode = F1}, Path,
+		TrUserData) ->
     if F1 == undefined -> ok;
        true -> v_type_int32(F1, [iCode | Path], TrUserData)
-    end,
-    if F2 == undefined -> ok;
-       true -> v_type_int32(F2, [iUserID | Path], TrUserData)
-    end,
-    if F3 == undefined -> ok;
-       true ->
-	   v_type_int32(F3, [iBindMobile | Path], TrUserData)
-    end,
-    if F4 == undefined -> ok;
-       true ->
-	   v_type_string(F4, [sPhoneNumber | Path], TrUserData)
-    end,
-    if F5 == undefined -> ok;
-       true ->
-	   v_type_string(F5, [sNickName | Path], TrUserData)
-    end,
-    if F6 == undefined -> ok;
-       true -> v_type_int32(F6, [iIcon | Path], TrUserData)
-    end,
-    if F7 == undefined -> ok;
-       true ->
-	   v_type_string(F7, [sSelfPhoto | Path], TrUserData)
-    end,
-    if F8 == undefined -> ok;
-       true ->
-	   v_type_int32(F8, [iMemberLevel | Path], TrUserData)
-    end,
-    if F9 == undefined -> ok;
-       true ->
-	   v_type_int32(F9, [iSpreaderID | Path], TrUserData)
-    end,
-    if F10 == undefined -> ok;
-       true -> v_type_int32(F10, [iExp | Path], TrUserData)
-    end,
-    if F11 == undefined -> ok;
-       true ->
-	   v_type_int64(F11, [iGameCoin | Path], TrUserData)
-    end,
-    if F12 == undefined -> ok;
-       true ->
-	   v_type_int64(F12, [iBankCoin | Path], TrUserData)
     end,
     ok;
 v_msg_s2c_login(X, Path, _TrUserData) ->
@@ -1874,29 +1253,7 @@ get_msg_defs() ->
 	      type = string, occurrence = optional, opts = []}]},
      {{msg, s2c_login},
       [#field{name = iCode, fnum = 1, rnum = 2, type = int32,
-	      occurrence = optional, opts = []},
-       #field{name = iUserID, fnum = 2, rnum = 3, type = int32,
-	      occurrence = optional, opts = []},
-       #field{name = iBindMobile, fnum = 3, rnum = 4,
-	      type = int32, occurrence = optional, opts = []},
-       #field{name = sPhoneNumber, fnum = 4, rnum = 5,
-	      type = string, occurrence = optional, opts = []},
-       #field{name = sNickName, fnum = 5, rnum = 6,
-	      type = string, occurrence = optional, opts = []},
-       #field{name = iIcon, fnum = 6, rnum = 7, type = int32,
-	      occurrence = optional, opts = []},
-       #field{name = sSelfPhoto, fnum = 7, rnum = 8,
-	      type = string, occurrence = optional, opts = []},
-       #field{name = iMemberLevel, fnum = 8, rnum = 9,
-	      type = int32, occurrence = optional, opts = []},
-       #field{name = iSpreaderID, fnum = 9, rnum = 10,
-	      type = int32, occurrence = optional, opts = []},
-       #field{name = iExp, fnum = 10, rnum = 11, type = int32,
-	      occurrence = optional, opts = []},
-       #field{name = iGameCoin, fnum = 11, rnum = 12,
-	      type = int64, occurrence = optional, opts = []},
-       #field{name = iBankCoin, fnum = 12, rnum = 13,
-	      type = int64, occurrence = optional, opts = []}]}].
+	      occurrence = optional, opts = []}]}].
 
 
 get_msg_names() ->
@@ -1946,29 +1303,7 @@ find_msg_def(c2s_login) ->
 	    type = string, occurrence = optional, opts = []}];
 find_msg_def(s2c_login) ->
     [#field{name = iCode, fnum = 1, rnum = 2, type = int32,
-	    occurrence = optional, opts = []},
-     #field{name = iUserID, fnum = 2, rnum = 3, type = int32,
-	    occurrence = optional, opts = []},
-     #field{name = iBindMobile, fnum = 3, rnum = 4,
-	    type = int32, occurrence = optional, opts = []},
-     #field{name = sPhoneNumber, fnum = 4, rnum = 5,
-	    type = string, occurrence = optional, opts = []},
-     #field{name = sNickName, fnum = 5, rnum = 6,
-	    type = string, occurrence = optional, opts = []},
-     #field{name = iIcon, fnum = 6, rnum = 7, type = int32,
-	    occurrence = optional, opts = []},
-     #field{name = sSelfPhoto, fnum = 7, rnum = 8,
-	    type = string, occurrence = optional, opts = []},
-     #field{name = iMemberLevel, fnum = 8, rnum = 9,
-	    type = int32, occurrence = optional, opts = []},
-     #field{name = iSpreaderID, fnum = 9, rnum = 10,
-	    type = int32, occurrence = optional, opts = []},
-     #field{name = iExp, fnum = 10, rnum = 11, type = int32,
-	    occurrence = optional, opts = []},
-     #field{name = iGameCoin, fnum = 11, rnum = 12,
-	    type = int64, occurrence = optional, opts = []},
-     #field{name = iBankCoin, fnum = 12, rnum = 13,
-	    type = int64, occurrence = optional, opts = []}];
+	    occurrence = optional, opts = []}];
 find_msg_def(_) -> error.
 
 

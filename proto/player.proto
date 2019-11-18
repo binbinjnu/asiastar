@@ -13,9 +13,9 @@ message c2s_player_info
 // 10100
 message s2c_player_info
 {
-    string name = 1;        // 玩家名
-    int64 coin = 2;         // 身上金币
-    int64 store_coin = 3;   // 保险箱金币
-    int32 face_id = 4;      // 头像id
-    int32 gender = 5;       // 性别
+    string sNickName = 1;       // 玩家名
+    int64 iGameCoin = 2;        // 身上金币
+    int64 iBankCoin = 3;        // 保险箱金币
+    string sPhone = 4;          // 手机号码
+    string sIcon = 5;           // 头像信息
 }

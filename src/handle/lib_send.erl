@@ -9,9 +9,10 @@
 -module(lib_send).
 -author("Administrator").
 
--include("record.hrl").
+-include("hrl_player.hrl").
 -include("hrl_common.hrl").
 -include("hrl_logs.hrl").
+-include("hrl_net.hrl").
 
 %% API
 -export([
@@ -27,10 +28,11 @@ mark(UID, SPid) ->
     catch unregister(Mark),
     ?true = register(Mark, SPid).
 
+%% 玩家进程和消息进程都可以调用
 set_spid(Pid) when is_pid(Pid)->
     erlang:put(spid, Pid).
 
-%% 直接发消息
+%% 直接发消息(玩家进程和消息进程都可以调用)
 send(Msg) ->
     case erlang:get(spid) of
         SPid when is_pid(SPid) ->
@@ -41,7 +43,7 @@ send(Msg) ->
 
 send(_, []) ->
     ok;
-send(#player{spid=SPid}, Msg) ->
+send(#player{spid = SPid}, Msg) ->
     net_api:pack_send(SPid, Msg);
 send(#handler_state{}, Msg) ->
     net_api:pack_send(self(), Msg);

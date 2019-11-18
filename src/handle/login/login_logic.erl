@@ -12,8 +12,8 @@
 -include("hrl_common.hrl").
 -include("hrl_logs.hrl").
 -include("hrl_db.hrl").
+-include("hrl_net.hrl").
 -include("login_pb.hrl").
--include("record.hrl").
 
 
 %% API
@@ -32,15 +32,27 @@ login(#c2s_login{sAccount = Account} = Req, State) ->
     } = Req,
     BaseInfo =
         #user_master{
-            account_name = Account,
-            account_passwd = Password,
-            channel_id = Channel
+            account = Account,
+            password = Password,
+            channel = Channel
         },
     case login_gsvr:get_user_master(BaseInfo) of
-        {ok, UserMaster} ->
+        {ok, OldOrNew, UserMaster} ->
             Pid = enter(UserMaster),
+            Resp = #s2c_login{iCode = 0},
+            lib_send:send(Resp),
+            case OldOrNew of
+                new ->  %% todo 新建角色, 写注册日志
+                    ok;
+                _ ->
+                    skip
+            end,
             %% todo 登录日志
             State#handler_state{pid = Pid};
+        {?false, err_password} ->   %% 密码错误
+            Resp = #s2c_login{iCode = 1},
+            lib_send:send(Resp),
+            State;
         _ ->
             self() ! stop,
             State
@@ -54,7 +66,7 @@ enter(UserMaster) ->
     case player_api:ensure_player(UserID) of
         {ok, ConnType, Pid} ->
             erlang:link(Pid),
-            gen_server:cast(Pid, {connect, ConnType, UserMaster}),
+            gen_server:cast(Pid, {connect, ConnType, self(), UserMaster}),
             Pid;
         _ ->
             self() ! stop,

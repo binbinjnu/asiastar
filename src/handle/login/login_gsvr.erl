@@ -42,28 +42,40 @@ start_link() ->
 init(_) ->
     {ok, []}.
 
-handle_call({get_user_master, #user_master{account_name = Account} = BaseInfo}, _From, State) ->
-    %% 确保创建角色不会重复
+%% 确保创建角色不会重复
+handle_call({get_user_master, #user_master{} = BaseInfo}, _From, State) ->
+    #user_master{
+        account = Account,
+        password = BasePassword
+    } = BaseInfo,
+    Md5Password = util_code:password(erlang:binary_to_list(BasePassword)),
     %% TODO 加上各种ets缓存(暂时不用缓存)
     Res =
         case db_mysql_api:select_user_master(Account) of
-            {ok, UserMaster} ->
-                {ok, UserMaster};
+            {ok, #user_master{password = Password} = UserMaster} ->
+                ?INFO("Password:~w, Md5Password:~w", [Password, Md5Password]),
+                %% 判断登录密码
+                case Md5Password =:= Password of
+                    ?true ->
+                        {ok, old, UserMaster};
+                    _ ->
+                        {?false, err_password}
+                end;
             ?NULL_VAL ->    %% 玩家不存在
                 UserID = index_gsvr:get_user_id(),
                 UserMaster =
                     BaseInfo#user_master{
                         user_id = UserID,
-                        account_nickname = Account
+                        nick_name = Account,
+                        password = Md5Password
                     },
                 try
                     db_mysql_api:insert_user_master(UserMaster),
-                    %% TODO  注册日志
-                    UserMaster
+                    {ok, new, UserMaster}
                 catch
                     Err:Reason ->
                         ?ERROR("insert user master fail, Err:~w, Reason:~w", [Err, Reason]),
-                        ?false
+                        {?false, err_db}
                 end
         end,
     {reply, Res, State};

@@ -37,18 +37,7 @@
 -ifndef('S2C_LOGIN_PB_H').
 -define('S2C_LOGIN_PB_H', true).
 -record(s2c_login,
-        {iCode = 0              :: integer() | undefined, % = 1, 32 bits
-         iUserID = 0            :: integer() | undefined, % = 2, 32 bits
-         iBindMobile = 0        :: integer() | undefined, % = 3, 32 bits
-         sPhoneNumber = <<>>    :: iodata() | undefined, % = 4
-         sNickName = <<>>       :: iodata() | undefined, % = 5
-         iIcon = 0              :: integer() | undefined, % = 6, 32 bits
-         sSelfPhoto = <<>>      :: iodata() | undefined, % = 7
-         iMemberLevel = 0       :: integer() | undefined, % = 8, 32 bits
-         iSpreaderID = 0        :: integer() | undefined, % = 9, 32 bits
-         iExp = 0               :: integer() | undefined, % = 10, 32 bits
-         iGameCoin = 0          :: integer() | undefined, % = 11, 32 bits
-         iBankCoin = 0          :: integer() | undefined % = 12, 32 bits
+        {iCode = 0              :: integer() | undefined % = 1, 32 bits
         }).
 -endif.
 

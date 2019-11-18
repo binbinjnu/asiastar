@@ -3,7 +3,7 @@ package login;
 // 登录协议, 包括: login相关协议和心跳包
 // base 100
 
-// 心跳包
+// 心跳包(登陆后开始)
 // 10000
 message c2s_heartbeat
 {
@@ -30,17 +30,6 @@ message c2s_login {
 // 登录返回
 // 10001
 message s2c_login {
-    int32 iCode = 1;        // 状态码 0;正常, 1:xx, 2:yy  默认0
-    int32 iUserID = 2;      // 角色id
-    int32 iBindMobile = 3;  // 0.未绑定, 1.已绑定
-    string sPhoneNumber = 4; // 手机号码
-    string sNickName = 5;   //
-    int32 iIcon     = 6;
-    string sSelfPhoto = 7;
-    int32 iMemberLevel = 8;
-    int32 iSpreaderID = 9; //推广员ID
-    int32 iExp = 10;
-    int64 iGameCoin = 11;
-    int64 iBankCoin = 12;
+    int32 iCode = 1;        // 状态码 0;正常, 1:密码错误  默认0
 }
 

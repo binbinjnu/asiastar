@@ -47,7 +47,7 @@ init([UID]) ->
     erlang:put(process_type, player),
     erlang:put(player_uid, UID),
 %%    gen_server:cast(self(), init),
-    {ok, #player{uid = UID}}.
+    {ok, #player{user_id = UID}}.
 
 
 handle_call(Request, From, Player) ->
@@ -106,11 +106,12 @@ do_call(_Msg, _From, Player) ->
     {reply, error, Player}.
 
 %% ConnType: connect | reconnect
-do_cast({connect, ConnType, UserMaster}, Player) ->
+do_cast({connect, ConnType, SPid, UserMaster}, Player) ->
+    Player1 = player_logic:connect(ConnType, SPid, UserMaster, Player),
+    {noreply, Player1};
 
-    {noreply, Player};
 
-do_cast(kick, Player) ->
+do_cast(stop, Player) ->
     {stop, normal, Player};
 
 do_cast({route_msg, MsgID, Data}, Player) ->
@@ -169,7 +170,7 @@ do_info(_Msg, Player) ->
 check_busy(#player{spid = SPid} = Player) ->
     case erlang:process_info(self(), message_queue_len) of
         {message_queue_len, Len} when Len >= ?MAX_MSG_LENGTH ->
-            ?WARNING("Message queue overflow ~p, kicked", [Len]),
+            ?WARNING("Message queue overflow ~p, stop net", [Len]),
             net_api:stop(SPid),
             player_session:delete(Player),
             discard_msg();
@@ -203,11 +204,11 @@ send(Sends, Player) ->
 event([{EvtID, Cont} | T], #player{} = Player) ->
     {noreply, Player1} = handle_cast({route_evt, EvtID, Cont}, Player),
     event(T, Player1);
-event([{UID, EvtID, Cont} | T], #player{uid = UID} = Player) ->
+event([{UID, EvtID, Cont} | T], #player{user_id = UID} = Player) ->
     {noreply, Player1} = handle_cast({route_evt, EvtID, Cont}, Player),
     event(T, Player1);
-event([{UUID, EvtID, Cont} | T], #player{} = Player) ->
-    event:trigger_event(UUID, EvtID, Cont),
+event([{UserID, EvtID, Cont} | T], #player{} = Player) ->
+    lib_event:trigger_event(UserID, EvtID, Cont),
     event(T, Player);
 event([], Player) ->
     Player.

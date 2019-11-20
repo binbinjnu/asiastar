@@ -46,8 +46,8 @@ init([UID]) ->
     ?true = erlang:register(player_api:pid_name(UID), self()),
     erlang:put(process_type, player),
     erlang:put(player_uid, UID),
-%%    gen_server:cast(self(), init),
-    {ok, #player{user_id = UID}}.
+    Token = player_logic:gen_token(),
+    {ok, #player{user_id = UID, token = Token}}.
 
 
 handle_call(Request, From, Player) ->
@@ -110,6 +110,11 @@ do_cast({connect, ConnType, SPid, UserMaster}, Player) ->
     Player1 = player_logic:connect(ConnType, SPid, UserMaster, Player),
     {noreply, Player1};
 
+%% re_login
+do_cast({re_login, SPid, Token}, Player) ->
+    Player1 = player_logic:re_login(SPid, Token, Player),
+    {noreply, Player1};
+
 
 do_cast(stop, Player) ->
     {stop, normal, Player};
@@ -139,11 +144,13 @@ do_cast(_Msg, Player) ->
     {noreply, Player}.
 
 do_info({'EXIT', Pid, _Reason}, Player) ->
-    Player1 = #player{} = player_logic:on_process_down(Pid, Player),
+    ?INFO("Pid:~w EXIT! Reason:~w", [Pid, _Reason]),
+    Player1 = #player{} = player_logic:on_disconnection(Pid, Player),
     {noreply, Player1};
 
 do_info({'DOWN', _MonitorRef, _Type, Pid, _Info}, Player) ->
-    Player1 = #player{} = player_logic:on_process_down(Pid, Player),
+    ?INFO("Pid:~w DOWN! Info:~w", [Pid, _Info]),
+    Player1 = #player{} = player_logic:on_disconnection(Pid, Player),
     {noreply, Player1};
 
 do_info(doloop, Player) ->
@@ -167,12 +174,11 @@ do_info(_Msg, Player) ->
     {noreply, Player}.
 
 
-check_busy(#player{spid = SPid} = Player) ->
+check_busy(#player{spid = SPid} = _Player) ->
     case erlang:process_info(self(), message_queue_len) of
         {message_queue_len, Len} when Len >= ?MAX_MSG_LENGTH ->
             ?WARNING("Message queue overflow ~p, stop net", [Len]),
             net_api:stop(SPid),
-            player_session:delete(Player),
             discard_msg();
         _ ->
             ok

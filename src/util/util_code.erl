@@ -18,13 +18,20 @@
     md5/1
 ]).
 
--export([password/1]).
+-export([
+    password/1,
+    reg_name/1
+]).
 
 -define(PASSWORD_KEY, "YXNpYXN0YXJrZXk=").  % asiastarkey的base64编码
 %% 密码
 password(Str) ->
     erlang:list_to_binary(md5(Str ++ ?PASSWORD_KEY)).
 
+%% 生成可用于进程register的atom
+%% [test, "_", 1] => test_1
+reg_name(L) ->
+    erlang:list_to_atom(lists:concat(L)).
 
 term_to_string(Term) ->
     lists:flatten(io_lib:format("~9999999p", [Term])).

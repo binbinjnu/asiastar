@@ -117,7 +117,7 @@ init_index(Key, Init) when is_integer(Init)->
     case ets:lookup(?ETS_TAB, Key)  of
         [] ->
             ?INFO("Index ~p is inited with number ~w", [Key, Init]),
-            ets:insert(?ETS_TAB, {Key, Init, undefined}),
+            ets:insert(?ETS_TAB, {Key, Init}),
             Init;
         [{_, Val, _}] ->
             ?INFO("Index ~p is inited with number ~w", [Key, Val]),

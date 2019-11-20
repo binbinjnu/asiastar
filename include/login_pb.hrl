@@ -41,4 +41,19 @@
         }).
 -endif.
 
+-ifndef('C2S_RE_LOGIN_PB_H').
+-define('C2S_RE_LOGIN_PB_H', true).
+-record(c2s_re_login,
+        {iUserID = 0            :: integer() | undefined, % = 1, 32 bits
+         sToken = <<>>          :: iodata() | undefined % = 2
+        }).
+-endif.
+
+-ifndef('S2C_RE_LOGIN_PB_H').
+-define('S2C_RE_LOGIN_PB_H', true).
+-record(s2c_re_login,
+        {iCode = 0              :: integer() | undefined % = 1, 32 bits
+        }).
+-endif.
+
 -endif.

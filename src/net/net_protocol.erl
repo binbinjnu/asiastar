@@ -217,6 +217,10 @@ handle_info({inet_reply, Socket, _Err}, #net_state{socket = Socket} = State) ->
     ?WARNING("inet_reply tcp error ~p", [_Err]),
     {stop, normal, State};
 
+handle_info(stop, State) ->
+    ?INFO("net protocol stop"),
+    {stop, normal, State};
+
 handle_info(_Info, State) ->
     ?WARNING("not match info: ~p", [_Info]),
     {noreply, State}.
@@ -259,6 +263,7 @@ handler_up(#net_state{socket = Socket, handler = Mod} = NetState) ->
 %%% do handle
 handle(Message, #net_state{handler = Mod, handler_state = HState} = NetState) ->
     HState1 = Mod:handle(Message, HState),
+    ?INFO("HState1:~w", [HState1]),
     NetState#net_state{handler_state = HState1}.
 
 

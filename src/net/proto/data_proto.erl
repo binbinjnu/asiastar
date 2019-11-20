@@ -15,6 +15,8 @@ get(c2s_heartbeat) -> {10000, login_pb};
 get(s2c_heartbeat) -> {10000, login_pb};
 get(c2s_login) -> {10001, login_pb};
 get(s2c_login) -> {10001, login_pb};
+get(c2s_re_login) -> {10002, login_pb};
+get(s2c_re_login) -> {10002, login_pb};
 
 %% player.proto get
 get(c2s_player_info) -> {10100, player_pb};
@@ -28,6 +30,7 @@ get(_ID) ->
 %% login.proto get_c2s
 get_c2s(10000) -> {c2s_heartbeat, login_pb};
 get_c2s(10001) -> {c2s_login, login_pb};
+get_c2s(10002) -> {c2s_re_login, login_pb};
 
 %% player.proto get_c2s
 get_c2s(10100) -> {c2s_player_info, player_pb};
@@ -40,6 +43,7 @@ get_c2s(_ID) ->
 %% login.proto get_s2c
 get_s2c(10000) -> {s2c_heartbeat, login_pb};
 get_s2c(10001) -> {s2c_login, login_pb};
+get_s2c(10002) -> {s2c_re_login, login_pb};
 
 %% player.proto get_s2c
 get_s2c(10100) -> {s2c_player_info, player_pb};

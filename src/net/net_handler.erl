@@ -13,6 +13,7 @@
 -include("hrl_common.hrl").
 -include("hrl_logs.hrl").
 -include("hrl_net.hrl").
+-include("hrl_proto.hrl").
 
 %% API
 
@@ -96,9 +97,9 @@ handle_1([{MsgID, Content} | T], HState) ->
     HState2 = handle_2(MsgID, Content, HState),
     handle_1(T, HState2).
 
-handle_2(MsgID, Content, #handler_state{pid = ?undefined} = HState) ->     %% 本地的
+handle_2(MsgID, Content, #handler_state{state = ?undefined, pid = ?undefined} = HState) ->     %% 本地的
     handle_local(MsgID, Content, HState);
-handle_2(MsgID, Content, #handler_state{} = HState) when MsgID div 1000 =:= 10 ->  %% 本地的Login
+handle_2(?c2s_heartbeat = MsgID, Content, #handler_state{} = HState) ->  %% 心跳
     handle_local(MsgID, Content, HState);
 handle_2(MsgID, Content, #handler_state{pid = Pid} = HState) ->            %% 对应Pid的
     gen_server:cast(Pid, {route_msg, MsgID, Content}),
@@ -110,7 +111,7 @@ handle_local(MsgID, Content, HState) ->
         {noreply, #handler_state{} = HState1} ->
             HState1;
         {stop, #handler_state{} = HState1} ->
-            self() ! stop,
+            net_api:stop(self()),
             HState1;
         _E ->
             ?WARNING("Invalid state. MsgID: ~p, state ~p", [MsgID, _E]),

@@ -60,20 +60,24 @@
 
 -type s2c_login() :: #s2c_login{}.
 
--export_type(['c2s_heartbeat'/0, 's2c_heartbeat'/0, 'c2s_login'/0, 's2c_login'/0]).
+-type c2s_re_login() :: #c2s_re_login{}.
 
--spec encode_msg(#c2s_heartbeat{} | #s2c_heartbeat{} | #c2s_login{} | #s2c_login{}) -> binary().
+-type s2c_re_login() :: #s2c_re_login{}.
+
+-export_type(['c2s_heartbeat'/0, 's2c_heartbeat'/0, 'c2s_login'/0, 's2c_login'/0, 'c2s_re_login'/0, 's2c_re_login'/0]).
+
+-spec encode_msg(#c2s_heartbeat{} | #s2c_heartbeat{} | #c2s_login{} | #s2c_login{} | #c2s_re_login{} | #s2c_re_login{}) -> binary().
 encode_msg(Msg) when tuple_size(Msg) >= 1 ->
     encode_msg(Msg, element(1, Msg), []).
 
--spec encode_msg(#c2s_heartbeat{} | #s2c_heartbeat{} | #c2s_login{} | #s2c_login{}, atom() | list()) -> binary().
+-spec encode_msg(#c2s_heartbeat{} | #s2c_heartbeat{} | #c2s_login{} | #s2c_login{} | #c2s_re_login{} | #s2c_re_login{}, atom() | list()) -> binary().
 encode_msg(Msg, MsgName) when is_atom(MsgName) ->
     encode_msg(Msg, MsgName, []);
 encode_msg(Msg, Opts)
     when tuple_size(Msg) >= 1, is_list(Opts) ->
     encode_msg(Msg, element(1, Msg), Opts).
 
--spec encode_msg(#c2s_heartbeat{} | #s2c_heartbeat{} | #c2s_login{} | #s2c_login{}, atom(), list()) -> binary().
+-spec encode_msg(#c2s_heartbeat{} | #s2c_heartbeat{} | #c2s_login{} | #s2c_login{} | #c2s_re_login{} | #s2c_re_login{}, atom(), list()) -> binary().
 encode_msg(Msg, MsgName, Opts) ->
     case proplists:get_bool(verify, Opts) of
       true -> verify_msg(Msg, MsgName, Opts);
@@ -90,7 +94,12 @@ encode_msg(Msg, MsgName, Opts) ->
       c2s_login ->
 	  encode_msg_c2s_login(id(Msg, TrUserData), TrUserData);
       s2c_login ->
-	  encode_msg_s2c_login(id(Msg, TrUserData), TrUserData)
+	  encode_msg_s2c_login(id(Msg, TrUserData), TrUserData);
+      c2s_re_login ->
+	  encode_msg_c2s_re_login(id(Msg, TrUserData),
+				  TrUserData);
+      s2c_re_login ->
+	  encode_msg_s2c_re_login(id(Msg, TrUserData), TrUserData)
     end.
 
 
@@ -203,6 +212,52 @@ encode_msg_s2c_login(Msg, TrUserData) ->
 
 encode_msg_s2c_login(#s2c_login{iCode = F1}, Bin,
 		     TrUserData) ->
+    if F1 == undefined -> Bin;
+       true ->
+	   begin
+	     TrF1 = id(F1, TrUserData),
+	     if TrF1 =:= 0 -> Bin;
+		true ->
+		    e_type_int32(TrF1, <<Bin/binary, 8>>, TrUserData)
+	     end
+	   end
+    end.
+
+encode_msg_c2s_re_login(Msg, TrUserData) ->
+    encode_msg_c2s_re_login(Msg, <<>>, TrUserData).
+
+
+encode_msg_c2s_re_login(#c2s_re_login{iUserID = F1,
+				      sToken = F2},
+			Bin, TrUserData) ->
+    B1 = if F1 == undefined -> Bin;
+	    true ->
+		begin
+		  TrF1 = id(F1, TrUserData),
+		  if TrF1 =:= 0 -> Bin;
+		     true ->
+			 e_type_int32(TrF1, <<Bin/binary, 8>>, TrUserData)
+		  end
+		end
+	 end,
+    if F2 == undefined -> B1;
+       true ->
+	   begin
+	     TrF2 = id(F2, TrUserData),
+	     case is_empty_string(TrF2) of
+	       true -> B1;
+	       false ->
+		   e_type_string(TrF2, <<B1/binary, 18>>, TrUserData)
+	     end
+	   end
+    end.
+
+encode_msg_s2c_re_login(Msg, TrUserData) ->
+    encode_msg_s2c_re_login(Msg, <<>>, TrUserData).
+
+
+encode_msg_s2c_re_login(#s2c_re_login{iCode = F1}, Bin,
+			TrUserData) ->
     if F1 == undefined -> Bin;
        true ->
 	   begin
@@ -356,7 +411,13 @@ decode_msg_2_doit(s2c_heartbeat, Bin, TrUserData) ->
 decode_msg_2_doit(c2s_login, Bin, TrUserData) ->
     id(decode_msg_c2s_login(Bin, TrUserData), TrUserData);
 decode_msg_2_doit(s2c_login, Bin, TrUserData) ->
-    id(decode_msg_s2c_login(Bin, TrUserData), TrUserData).
+    id(decode_msg_s2c_login(Bin, TrUserData), TrUserData);
+decode_msg_2_doit(c2s_re_login, Bin, TrUserData) ->
+    id(decode_msg_c2s_re_login(Bin, TrUserData),
+       TrUserData);
+decode_msg_2_doit(s2c_re_login, Bin, TrUserData) ->
+    id(decode_msg_s2c_re_login(Bin, TrUserData),
+       TrUserData).
 
 
 
@@ -919,6 +980,237 @@ skip_64_s2c_login(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
     dfp_read_field_def_s2c_login(Rest, Z1, Z2, F@_1,
 				 TrUserData).
 
+decode_msg_c2s_re_login(Bin, TrUserData) ->
+    dfp_read_field_def_c2s_re_login(Bin, 0, 0,
+				    id(0, TrUserData), id(<<>>, TrUserData),
+				    TrUserData).
+
+dfp_read_field_def_c2s_re_login(<<8, Rest/binary>>, Z1,
+				Z2, F@_1, F@_2, TrUserData) ->
+    d_field_c2s_re_login_iUserID(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData);
+dfp_read_field_def_c2s_re_login(<<18, Rest/binary>>, Z1,
+				Z2, F@_1, F@_2, TrUserData) ->
+    d_field_c2s_re_login_sToken(Rest, Z1, Z2, F@_1, F@_2,
+				TrUserData);
+dfp_read_field_def_c2s_re_login(<<>>, 0, 0, F@_1, F@_2,
+				_) ->
+    #c2s_re_login{iUserID = F@_1, sToken = F@_2};
+dfp_read_field_def_c2s_re_login(Other, Z1, Z2, F@_1,
+				F@_2, TrUserData) ->
+    dg_read_field_def_c2s_re_login(Other, Z1, Z2, F@_1,
+				   F@_2, TrUserData).
+
+dg_read_field_def_c2s_re_login(<<1:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, F@_1, F@_2, TrUserData)
+    when N < 32 - 7 ->
+    dg_read_field_def_c2s_re_login(Rest, N + 7,
+				   X bsl N + Acc, F@_1, F@_2, TrUserData);
+dg_read_field_def_c2s_re_login(<<0:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, F@_1, F@_2, TrUserData) ->
+    Key = X bsl N + Acc,
+    case Key of
+      8 ->
+	  d_field_c2s_re_login_iUserID(Rest, 0, 0, F@_1, F@_2,
+				       TrUserData);
+      18 ->
+	  d_field_c2s_re_login_sToken(Rest, 0, 0, F@_1, F@_2,
+				      TrUserData);
+      _ ->
+	  case Key band 7 of
+	    0 ->
+		skip_varint_c2s_re_login(Rest, 0, 0, F@_1, F@_2,
+					 TrUserData);
+	    1 ->
+		skip_64_c2s_re_login(Rest, 0, 0, F@_1, F@_2,
+				     TrUserData);
+	    2 ->
+		skip_length_delimited_c2s_re_login(Rest, 0, 0, F@_1,
+						   F@_2, TrUserData);
+	    3 ->
+		skip_group_c2s_re_login(Rest, Key bsr 3, 0, F@_1, F@_2,
+					TrUserData);
+	    5 ->
+		skip_32_c2s_re_login(Rest, 0, 0, F@_1, F@_2, TrUserData)
+	  end
+    end;
+dg_read_field_def_c2s_re_login(<<>>, 0, 0, F@_1, F@_2,
+			       _) ->
+    #c2s_re_login{iUserID = F@_1, sToken = F@_2}.
+
+d_field_c2s_re_login_iUserID(<<1:1, X:7, Rest/binary>>,
+			     N, Acc, F@_1, F@_2, TrUserData)
+    when N < 57 ->
+    d_field_c2s_re_login_iUserID(Rest, N + 7, X bsl N + Acc,
+				 F@_1, F@_2, TrUserData);
+d_field_c2s_re_login_iUserID(<<0:1, X:7, Rest/binary>>,
+			     N, Acc, _, F@_2, TrUserData) ->
+    {NewFValue, RestF} = {begin
+			    <<Res:32/signed-native>> = <<(X bsl N +
+							    Acc):32/unsigned-native>>,
+			    id(Res, TrUserData)
+			  end,
+			  Rest},
+    dfp_read_field_def_c2s_re_login(RestF, 0, 0, NewFValue,
+				    F@_2, TrUserData).
+
+d_field_c2s_re_login_sToken(<<1:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, TrUserData)
+    when N < 57 ->
+    d_field_c2s_re_login_sToken(Rest, N + 7, X bsl N + Acc,
+				F@_1, F@_2, TrUserData);
+d_field_c2s_re_login_sToken(<<0:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, _, TrUserData) ->
+    {NewFValue, RestF} = begin
+			   Len = X bsl N + Acc,
+			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
+			   {id(binary:copy(Bytes), TrUserData), Rest2}
+			 end,
+    dfp_read_field_def_c2s_re_login(RestF, 0, 0, F@_1,
+				    NewFValue, TrUserData).
+
+skip_varint_c2s_re_login(<<1:1, _:7, Rest/binary>>, Z1,
+			 Z2, F@_1, F@_2, TrUserData) ->
+    skip_varint_c2s_re_login(Rest, Z1, Z2, F@_1, F@_2,
+			     TrUserData);
+skip_varint_c2s_re_login(<<0:1, _:7, Rest/binary>>, Z1,
+			 Z2, F@_1, F@_2, TrUserData) ->
+    dfp_read_field_def_c2s_re_login(Rest, Z1, Z2, F@_1,
+				    F@_2, TrUserData).
+
+skip_length_delimited_c2s_re_login(<<1:1, X:7,
+				     Rest/binary>>,
+				   N, Acc, F@_1, F@_2, TrUserData)
+    when N < 57 ->
+    skip_length_delimited_c2s_re_login(Rest, N + 7,
+				       X bsl N + Acc, F@_1, F@_2, TrUserData);
+skip_length_delimited_c2s_re_login(<<0:1, X:7,
+				     Rest/binary>>,
+				   N, Acc, F@_1, F@_2, TrUserData) ->
+    Length = X bsl N + Acc,
+    <<_:Length/binary, Rest2/binary>> = Rest,
+    dfp_read_field_def_c2s_re_login(Rest2, 0, 0, F@_1, F@_2,
+				    TrUserData).
+
+skip_group_c2s_re_login(Bin, FNum, Z2, F@_1, F@_2,
+			TrUserData) ->
+    {_, Rest} = read_group(Bin, FNum),
+    dfp_read_field_def_c2s_re_login(Rest, 0, Z2, F@_1, F@_2,
+				    TrUserData).
+
+skip_32_c2s_re_login(<<_:32, Rest/binary>>, Z1, Z2,
+		     F@_1, F@_2, TrUserData) ->
+    dfp_read_field_def_c2s_re_login(Rest, Z1, Z2, F@_1,
+				    F@_2, TrUserData).
+
+skip_64_c2s_re_login(<<_:64, Rest/binary>>, Z1, Z2,
+		     F@_1, F@_2, TrUserData) ->
+    dfp_read_field_def_c2s_re_login(Rest, Z1, Z2, F@_1,
+				    F@_2, TrUserData).
+
+decode_msg_s2c_re_login(Bin, TrUserData) ->
+    dfp_read_field_def_s2c_re_login(Bin, 0, 0,
+				    id(0, TrUserData), TrUserData).
+
+dfp_read_field_def_s2c_re_login(<<8, Rest/binary>>, Z1,
+				Z2, F@_1, TrUserData) ->
+    d_field_s2c_re_login_iCode(Rest, Z1, Z2, F@_1,
+			       TrUserData);
+dfp_read_field_def_s2c_re_login(<<>>, 0, 0, F@_1, _) ->
+    #s2c_re_login{iCode = F@_1};
+dfp_read_field_def_s2c_re_login(Other, Z1, Z2, F@_1,
+				TrUserData) ->
+    dg_read_field_def_s2c_re_login(Other, Z1, Z2, F@_1,
+				   TrUserData).
+
+dg_read_field_def_s2c_re_login(<<1:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, F@_1, TrUserData)
+    when N < 32 - 7 ->
+    dg_read_field_def_s2c_re_login(Rest, N + 7,
+				   X bsl N + Acc, F@_1, TrUserData);
+dg_read_field_def_s2c_re_login(<<0:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, F@_1, TrUserData) ->
+    Key = X bsl N + Acc,
+    case Key of
+      8 ->
+	  d_field_s2c_re_login_iCode(Rest, 0, 0, F@_1,
+				     TrUserData);
+      _ ->
+	  case Key band 7 of
+	    0 ->
+		skip_varint_s2c_re_login(Rest, 0, 0, F@_1, TrUserData);
+	    1 -> skip_64_s2c_re_login(Rest, 0, 0, F@_1, TrUserData);
+	    2 ->
+		skip_length_delimited_s2c_re_login(Rest, 0, 0, F@_1,
+						   TrUserData);
+	    3 ->
+		skip_group_s2c_re_login(Rest, Key bsr 3, 0, F@_1,
+					TrUserData);
+	    5 -> skip_32_s2c_re_login(Rest, 0, 0, F@_1, TrUserData)
+	  end
+    end;
+dg_read_field_def_s2c_re_login(<<>>, 0, 0, F@_1, _) ->
+    #s2c_re_login{iCode = F@_1}.
+
+d_field_s2c_re_login_iCode(<<1:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, TrUserData)
+    when N < 57 ->
+    d_field_s2c_re_login_iCode(Rest, N + 7, X bsl N + Acc,
+			       F@_1, TrUserData);
+d_field_s2c_re_login_iCode(<<0:1, X:7, Rest/binary>>, N,
+			   Acc, _, TrUserData) ->
+    {NewFValue, RestF} = {begin
+			    <<Res:32/signed-native>> = <<(X bsl N +
+							    Acc):32/unsigned-native>>,
+			    id(Res, TrUserData)
+			  end,
+			  Rest},
+    dfp_read_field_def_s2c_re_login(RestF, 0, 0, NewFValue,
+				    TrUserData).
+
+skip_varint_s2c_re_login(<<1:1, _:7, Rest/binary>>, Z1,
+			 Z2, F@_1, TrUserData) ->
+    skip_varint_s2c_re_login(Rest, Z1, Z2, F@_1,
+			     TrUserData);
+skip_varint_s2c_re_login(<<0:1, _:7, Rest/binary>>, Z1,
+			 Z2, F@_1, TrUserData) ->
+    dfp_read_field_def_s2c_re_login(Rest, Z1, Z2, F@_1,
+				    TrUserData).
+
+skip_length_delimited_s2c_re_login(<<1:1, X:7,
+				     Rest/binary>>,
+				   N, Acc, F@_1, TrUserData)
+    when N < 57 ->
+    skip_length_delimited_s2c_re_login(Rest, N + 7,
+				       X bsl N + Acc, F@_1, TrUserData);
+skip_length_delimited_s2c_re_login(<<0:1, X:7,
+				     Rest/binary>>,
+				   N, Acc, F@_1, TrUserData) ->
+    Length = X bsl N + Acc,
+    <<_:Length/binary, Rest2/binary>> = Rest,
+    dfp_read_field_def_s2c_re_login(Rest2, 0, 0, F@_1,
+				    TrUserData).
+
+skip_group_s2c_re_login(Bin, FNum, Z2, F@_1,
+			TrUserData) ->
+    {_, Rest} = read_group(Bin, FNum),
+    dfp_read_field_def_s2c_re_login(Rest, 0, Z2, F@_1,
+				    TrUserData).
+
+skip_32_s2c_re_login(<<_:32, Rest/binary>>, Z1, Z2,
+		     F@_1, TrUserData) ->
+    dfp_read_field_def_s2c_re_login(Rest, Z1, Z2, F@_1,
+				    TrUserData).
+
+skip_64_s2c_re_login(<<_:64, Rest/binary>>, Z1, Z2,
+		     F@_1, TrUserData) ->
+    dfp_read_field_def_s2c_re_login(Rest, Z1, Z2, F@_1,
+				    TrUserData).
+
 read_group(Bin, FieldNum) ->
     {NumBytes, EndTagLen} = read_gr_b(Bin, 0, 0, 0, 0, FieldNum),
     <<Group:NumBytes/binary, _:EndTagLen/binary, Rest/binary>> = Bin,
@@ -996,7 +1288,11 @@ merge_msgs(Prev, New, MsgName, Opts) ->
       s2c_heartbeat ->
 	  merge_msg_s2c_heartbeat(Prev, New, TrUserData);
       c2s_login -> merge_msg_c2s_login(Prev, New, TrUserData);
-      s2c_login -> merge_msg_s2c_login(Prev, New, TrUserData)
+      s2c_login -> merge_msg_s2c_login(Prev, New, TrUserData);
+      c2s_re_login ->
+	  merge_msg_c2s_re_login(Prev, New, TrUserData);
+      s2c_re_login ->
+	  merge_msg_s2c_re_login(Prev, New, TrUserData)
     end.
 
 -compile({nowarn_unused_function,merge_msg_c2s_heartbeat/3}).
@@ -1060,6 +1356,29 @@ merge_msg_s2c_login(#s2c_login{iCode = PFiCode},
 		      true -> NFiCode
 		   end}.
 
+-compile({nowarn_unused_function,merge_msg_c2s_re_login/3}).
+merge_msg_c2s_re_login(#c2s_re_login{iUserID =
+					 PFiUserID,
+				     sToken = PFsToken},
+		       #c2s_re_login{iUserID = NFiUserID, sToken = NFsToken},
+		       _) ->
+    #c2s_re_login{iUserID =
+		      if NFiUserID =:= undefined -> PFiUserID;
+			 true -> NFiUserID
+		      end,
+		  sToken =
+		      if NFsToken =:= undefined -> PFsToken;
+			 true -> NFsToken
+		      end}.
+
+-compile({nowarn_unused_function,merge_msg_s2c_re_login/3}).
+merge_msg_s2c_re_login(#s2c_re_login{iCode = PFiCode},
+		       #s2c_re_login{iCode = NFiCode}, _) ->
+    #s2c_re_login{iCode =
+		      if NFiCode =:= undefined -> PFiCode;
+			 true -> NFiCode
+		      end}.
+
 
 verify_msg(Msg) when tuple_size(Msg) >= 1 ->
     verify_msg(Msg, element(1, Msg), []);
@@ -1084,6 +1403,10 @@ verify_msg(Msg, MsgName, Opts) ->
 	  v_msg_c2s_login(Msg, [MsgName], TrUserData);
       s2c_login ->
 	  v_msg_s2c_login(Msg, [MsgName], TrUserData);
+      c2s_re_login ->
+	  v_msg_c2s_re_login(Msg, [MsgName], TrUserData);
+      s2c_re_login ->
+	  v_msg_s2c_re_login(Msg, [MsgName], TrUserData);
       _ -> mk_type_error(not_a_known_message, Msg, [])
     end.
 
@@ -1149,6 +1472,32 @@ v_msg_s2c_login(#s2c_login{iCode = F1}, Path,
     ok;
 v_msg_s2c_login(X, Path, _TrUserData) ->
     mk_type_error({expected_msg, s2c_login}, X, Path).
+
+-compile({nowarn_unused_function,v_msg_c2s_re_login/3}).
+-dialyzer({nowarn_function,v_msg_c2s_re_login/3}).
+v_msg_c2s_re_login(#c2s_re_login{iUserID = F1,
+				 sToken = F2},
+		   Path, TrUserData) ->
+    if F1 == undefined -> ok;
+       true -> v_type_int32(F1, [iUserID | Path], TrUserData)
+    end,
+    if F2 == undefined -> ok;
+       true -> v_type_string(F2, [sToken | Path], TrUserData)
+    end,
+    ok;
+v_msg_c2s_re_login(X, Path, _TrUserData) ->
+    mk_type_error({expected_msg, c2s_re_login}, X, Path).
+
+-compile({nowarn_unused_function,v_msg_s2c_re_login/3}).
+-dialyzer({nowarn_function,v_msg_s2c_re_login/3}).
+v_msg_s2c_re_login(#s2c_re_login{iCode = F1}, Path,
+		   TrUserData) ->
+    if F1 == undefined -> ok;
+       true -> v_type_int32(F1, [iCode | Path], TrUserData)
+    end,
+    ok;
+v_msg_s2c_re_login(X, Path, _TrUserData) ->
+    mk_type_error({expected_msg, s2c_re_login}, X, Path).
 
 -compile({nowarn_unused_function,v_type_int32/3}).
 -dialyzer({nowarn_function,v_type_int32/3}).
@@ -1253,18 +1602,28 @@ get_msg_defs() ->
 	      type = string, occurrence = optional, opts = []}]},
      {{msg, s2c_login},
       [#field{name = iCode, fnum = 1, rnum = 2, type = int32,
+	      occurrence = optional, opts = []}]},
+     {{msg, c2s_re_login},
+      [#field{name = iUserID, fnum = 1, rnum = 2,
+	      type = int32, occurrence = optional, opts = []},
+       #field{name = sToken, fnum = 2, rnum = 3, type = string,
+	      occurrence = optional, opts = []}]},
+     {{msg, s2c_re_login},
+      [#field{name = iCode, fnum = 1, rnum = 2, type = int32,
 	      occurrence = optional, opts = []}]}].
 
 
 get_msg_names() ->
-    [c2s_heartbeat, s2c_heartbeat, c2s_login, s2c_login].
+    [c2s_heartbeat, s2c_heartbeat, c2s_login, s2c_login,
+     c2s_re_login, s2c_re_login].
 
 
 get_group_names() -> [].
 
 
 get_msg_or_group_names() ->
-    [c2s_heartbeat, s2c_heartbeat, c2s_login, s2c_login].
+    [c2s_heartbeat, s2c_heartbeat, c2s_login, s2c_login,
+     c2s_re_login, s2c_re_login].
 
 
 get_enum_names() -> [].
@@ -1302,6 +1661,14 @@ find_msg_def(c2s_login) ->
      #field{name = sChannel, fnum = 7, rnum = 8,
 	    type = string, occurrence = optional, opts = []}];
 find_msg_def(s2c_login) ->
+    [#field{name = iCode, fnum = 1, rnum = 2, type = int32,
+	    occurrence = optional, opts = []}];
+find_msg_def(c2s_re_login) ->
+    [#field{name = iUserID, fnum = 1, rnum = 2,
+	    type = int32, occurrence = optional, opts = []},
+     #field{name = sToken, fnum = 2, rnum = 3, type = string,
+	    occurrence = optional, opts = []}];
+find_msg_def(s2c_re_login) ->
     [#field{name = iCode, fnum = 1, rnum = 2, type = int32,
 	    occurrence = optional, opts = []}];
 find_msg_def(_) -> error.
@@ -1373,6 +1740,8 @@ fqbin_to_msg_name(<<"login.c2s_heartbeat">>) -> c2s_heartbeat;
 fqbin_to_msg_name(<<"login.s2c_heartbeat">>) -> s2c_heartbeat;
 fqbin_to_msg_name(<<"login.c2s_login">>) -> c2s_login;
 fqbin_to_msg_name(<<"login.s2c_login">>) -> s2c_login;
+fqbin_to_msg_name(<<"login.c2s_re_login">>) -> c2s_re_login;
+fqbin_to_msg_name(<<"login.s2c_re_login">>) -> s2c_re_login;
 fqbin_to_msg_name(E) -> error({gpb_error, {badmsg, E}}).
 
 
@@ -1380,6 +1749,8 @@ msg_name_to_fqbin(c2s_heartbeat) -> <<"login.c2s_heartbeat">>;
 msg_name_to_fqbin(s2c_heartbeat) -> <<"login.s2c_heartbeat">>;
 msg_name_to_fqbin(c2s_login) -> <<"login.c2s_login">>;
 msg_name_to_fqbin(s2c_login) -> <<"login.s2c_login">>;
+msg_name_to_fqbin(c2s_re_login) -> <<"login.c2s_re_login">>;
+msg_name_to_fqbin(s2c_re_login) -> <<"login.s2c_re_login">>;
 msg_name_to_fqbin(E) -> error({gpb_error, {badmsg, E}}).
 
 
@@ -1421,7 +1792,8 @@ get_all_proto_names() -> ["login"].
 
 
 get_msg_containment("login") ->
-    [c2s_heartbeat, c2s_login, s2c_heartbeat, s2c_login];
+    [c2s_heartbeat, c2s_login, c2s_re_login, s2c_heartbeat,
+     s2c_login, s2c_re_login];
 get_msg_containment(P) ->
     error({gpb_error, {badproto, P}}).
 
@@ -1448,7 +1820,9 @@ get_enum_containment(P) ->
 
 get_proto_by_msg_name_as_fqbin(<<"login.s2c_heartbeat">>) -> "login";
 get_proto_by_msg_name_as_fqbin(<<"login.c2s_heartbeat">>) -> "login";
+get_proto_by_msg_name_as_fqbin(<<"login.s2c_re_login">>) -> "login";
 get_proto_by_msg_name_as_fqbin(<<"login.s2c_login">>) -> "login";
+get_proto_by_msg_name_as_fqbin(<<"login.c2s_re_login">>) -> "login";
 get_proto_by_msg_name_as_fqbin(<<"login.c2s_login">>) -> "login";
 get_proto_by_msg_name_as_fqbin(E) ->
     error({gpb_error, {badmsg, E}}).

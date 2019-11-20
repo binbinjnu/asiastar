@@ -17,7 +17,10 @@
 
 
 %% API
--export([login/2]).
+-export([
+    login/2,
+    re_login/3
+]).
 
 %% 登录 (在玩家进程中取返回s2c_login)
 login(#c2s_login{sAccount = Account} = Req, State) ->
@@ -31,7 +34,7 @@ login(#c2s_login{sAccount = Account} = Req, State) ->
         sChannel = Channel
     } = Req,
     BaseInfo =
-        #user_master{
+        #user_master_t{
             account = Account,
             password = Password,
             channel = Channel
@@ -48,20 +51,21 @@ login(#c2s_login{sAccount = Account} = Req, State) ->
                     skip
             end,
             %% todo 登录日志
-            State#handler_state{pid = Pid};
+            ?INFO("Player Pid:~w", [Pid]),
+            State#handler_state{state = normal, pid = Pid};
         {?false, err_password} ->   %% 密码错误
             Resp = #s2c_login{iCode = 1},
             lib_send:send(Resp),
             State;
         _ ->
-            self() ! stop,
-            State
+            net_api:stop(self()),
+            State#handler_state{state = error}
     end.
 
 
 %% 进入游戏
 enter(UserMaster) ->
-    #user_master{user_id = UserID} = UserMaster,
+    #user_master_t{user_id = UserID} = UserMaster,
     %% 判断进程是否存在
     case player_api:ensure_player(UserID) of
         {ok, ConnType, Pid} ->
@@ -69,7 +73,25 @@ enter(UserMaster) ->
             gen_server:cast(Pid, {connect, ConnType, self(), UserMaster}),
             Pid;
         _ ->
-            self() ! stop,
+            net_api:stop(self()),
             ?false
     end.
 
+
+%%% token 重连
+re_login(UserID, Token, State) ->
+    case player_api:pid(UserID) of
+        Pid when is_pid(Pid) ->
+            %% 直接当成功, 如果在玩家进程中判断到有错误, 在玩家进程中断掉连接
+            erlang:link(Pid),
+            gen_server:cast(Pid, {re_login, self(), Token}),
+            Resp = #s2c_re_login{iCode = 0},
+            lib_send:send(Resp),
+            State#handler_state{state = normal, pid = Pid};
+        _ ->
+            %% 关闭连接
+            Resp = #s2c_re_login{iCode = 1},
+            lib_send:send(Resp),
+            net_api:stop(self()),
+            State#handler_state{state = error}
+    end.

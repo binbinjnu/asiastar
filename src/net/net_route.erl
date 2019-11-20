@@ -9,6 +9,8 @@
 -module(net_route).
 -author("Administrator").
 
+-include("hrl_net.hrl").
+
 %% API
 -export([
     route_msg/3,
@@ -28,7 +30,7 @@ route_evt(MsgID, Data, State) ->
 
 %% 消息路由
 msg_mod(MsgID) ->
-    case MsgID div 100 of
+    case MsgID div ?PROTO_RANGE of
         100 -> handle_login;
         101 -> handle_player;
         _ ->  handle_err

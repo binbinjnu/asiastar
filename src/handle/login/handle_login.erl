@@ -20,8 +20,12 @@ handle_msg(#c2s_login{} = Req, State) ->
     State1 = login_logic:login(Req, State),
     {noreply, State1};
 
-handle_msg(_Msg, State) ->
-    ?WARNING("unhandle msg ~p", [_Msg]),
+handle_msg(#c2s_re_login{iUserID = UserID, sToken = Token} = _Req, State) ->
+    State1 = login_logic:re_login(UserID, Token, State),
+    {noreply, State1};
+
+handle_msg(_Req, State) ->
+    ?WARNING("unhandle Req ~p", [_Req]),
     {noreply, State}.
 
 

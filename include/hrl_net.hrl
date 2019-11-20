@@ -25,6 +25,8 @@
 -define(NET_MAX_WATER_LV, 300).     %% 水位警戒等级
 -define(NET_HEART_TIMEOUT, 120).    %% 心跳超时 seconds
 
+-define(PROTO_RANGE, 100).          %% 协议号分段范围 (0-99) 100个
+
 %% net_handler 的state record
 -record(handler_state, {
     state     = undefined   :: term(),              %% 状态

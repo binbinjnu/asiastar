@@ -33,3 +33,15 @@ message s2c_login {
     int32 iCode = 1;        // 状态码 0;正常, 1:密码错误  默认0
 }
 
+// token重连
+// 10002
+message c2s_re_login {
+    int32 iUserID = 1;      // 玩家id
+    string sToken = 2;      // token
+}
+
+// token重连反馈
+// 10002
+message s2c_re_login {
+    int32 iCode = 1;        // 状态码 0;正常, 1:token错误, 2:
+}

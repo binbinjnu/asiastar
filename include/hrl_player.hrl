@@ -31,6 +31,7 @@
     channel         = <<"">>,           % 渠道
 
     %% 玩家临时数据
+    token           = undefined,        % 玩家token, 跟着进程一起存在, 方便客户端在进程存活期间直接重连
     state           = 0,                % 玩家状态, 对应宏定义 PLAYER_STATE_XXX
     game_state      = undefined,        % 游戏状态, 不在游戏中:undefined, 游戏中:{game_id, type_id, table_id, PID}
     online_loop     = 0,                % 玩家累计在线秒数计数

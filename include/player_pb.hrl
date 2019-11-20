@@ -17,11 +17,13 @@
 -ifndef('S2C_PLAYER_INFO_PB_H').
 -define('S2C_PLAYER_INFO_PB_H', true).
 -record(s2c_player_info,
-        {sNickName = <<>>       :: iodata() | undefined, % = 1
-         iGameCoin = 0          :: integer() | undefined, % = 2, 32 bits
-         iBankCoin = 0          :: integer() | undefined, % = 3, 32 bits
-         sPhone = <<>>          :: iodata() | undefined, % = 4
-         sIcon = <<>>           :: iodata() | undefined % = 5
+        {sToken = <<>>          :: iodata() | undefined, % = 1
+         iUserID = 0            :: integer() | undefined, % = 2, 32 bits
+         sNickName = <<>>       :: iodata() | undefined, % = 3
+         iGameCoin = 0          :: integer() | undefined, % = 4, 32 bits
+         iBankCoin = 0          :: integer() | undefined, % = 5, 32 bits
+         sPhone = <<>>          :: iodata() | undefined, % = 6
+         sIcon = <<>>           :: iodata() | undefined % = 7
         }).
 -endif.
 

@@ -92,10 +92,10 @@ encode_msg_s2c_player_info(Msg, TrUserData) ->
     encode_msg_s2c_player_info(Msg, <<>>, TrUserData).
 
 
-encode_msg_s2c_player_info(#s2c_player_info{sNickName =
-						F1,
-					    iGameCoin = F2, iBankCoin = F3,
-					    sPhone = F4, sIcon = F5},
+encode_msg_s2c_player_info(#s2c_player_info{sToken = F1,
+					    iUserID = F2, sNickName = F3,
+					    iGameCoin = F4, iBankCoin = F5,
+					    sPhone = F6, sIcon = F7},
 			   Bin, TrUserData) ->
     B1 = if F1 == undefined -> Bin;
 	    true ->
@@ -114,7 +114,7 @@ encode_msg_s2c_player_info(#s2c_player_info{sNickName =
 		  TrF2 = id(F2, TrUserData),
 		  if TrF2 =:= 0 -> B1;
 		     true ->
-			 e_type_int64(TrF2, <<B1/binary, 16>>, TrUserData)
+			 e_type_int32(TrF2, <<B1/binary, 16>>, TrUserData)
 		  end
 		end
 	 end,
@@ -122,9 +122,10 @@ encode_msg_s2c_player_info(#s2c_player_info{sNickName =
 	    true ->
 		begin
 		  TrF3 = id(F3, TrUserData),
-		  if TrF3 =:= 0 -> B2;
-		     true ->
-			 e_type_int64(TrF3, <<B2/binary, 24>>, TrUserData)
+		  case is_empty_string(TrF3) of
+		    true -> B2;
+		    false ->
+			e_type_string(TrF3, <<B2/binary, 26>>, TrUserData)
 		  end
 		end
 	 end,
@@ -132,21 +133,41 @@ encode_msg_s2c_player_info(#s2c_player_info{sNickName =
 	    true ->
 		begin
 		  TrF4 = id(F4, TrUserData),
-		  case is_empty_string(TrF4) of
-		    true -> B3;
-		    false ->
-			e_type_string(TrF4, <<B3/binary, 34>>, TrUserData)
+		  if TrF4 =:= 0 -> B3;
+		     true ->
+			 e_type_int64(TrF4, <<B3/binary, 32>>, TrUserData)
 		  end
 		end
 	 end,
-    if F5 == undefined -> B4;
+    B5 = if F5 == undefined -> B4;
+	    true ->
+		begin
+		  TrF5 = id(F5, TrUserData),
+		  if TrF5 =:= 0 -> B4;
+		     true ->
+			 e_type_int64(TrF5, <<B4/binary, 40>>, TrUserData)
+		  end
+		end
+	 end,
+    B6 = if F6 == undefined -> B5;
+	    true ->
+		begin
+		  TrF6 = id(F6, TrUserData),
+		  case is_empty_string(TrF6) of
+		    true -> B5;
+		    false ->
+			e_type_string(TrF6, <<B5/binary, 50>>, TrUserData)
+		  end
+		end
+	 end,
+    if F7 == undefined -> B6;
        true ->
 	   begin
-	     TrF5 = id(F5, TrUserData),
-	     case is_empty_string(TrF5) of
-	       true -> B4;
+	     TrF7 = id(F7, TrUserData),
+	     case is_empty_string(TrF7) of
+	       true -> B6;
 	       false ->
-		   e_type_string(TrF5, <<B4/binary, 42>>, TrUserData)
+		   e_type_string(TrF7, <<B6/binary, 58>>, TrUserData)
 	     end
 	   end
     end.
@@ -369,129 +390,206 @@ skip_64_c2s_player_info(<<_:64, Rest/binary>>, Z1, Z2,
 decode_msg_s2c_player_info(Bin, TrUserData) ->
     dfp_read_field_def_s2c_player_info(Bin, 0, 0,
 				       id(<<>>, TrUserData), id(0, TrUserData),
+				       id(<<>>, TrUserData), id(0, TrUserData),
 				       id(0, TrUserData), id(<<>>, TrUserData),
 				       id(<<>>, TrUserData), TrUserData).
 
 dfp_read_field_def_s2c_player_info(<<10, Rest/binary>>,
-				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5,
-				   TrUserData) ->
-    d_field_s2c_player_info_sNickName(Rest, Z1, Z2, F@_1,
-				      F@_2, F@_3, F@_4, F@_5, TrUserData);
+				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				   F@_7, TrUserData) ->
+    d_field_s2c_player_info_sToken(Rest, Z1, Z2, F@_1, F@_2,
+				   F@_3, F@_4, F@_5, F@_6, F@_7, TrUserData);
 dfp_read_field_def_s2c_player_info(<<16, Rest/binary>>,
-				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5,
-				   TrUserData) ->
+				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				   F@_7, TrUserData) ->
+    d_field_s2c_player_info_iUserID(Rest, Z1, Z2, F@_1,
+				    F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				    TrUserData);
+dfp_read_field_def_s2c_player_info(<<26, Rest/binary>>,
+				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				   F@_7, TrUserData) ->
+    d_field_s2c_player_info_sNickName(Rest, Z1, Z2, F@_1,
+				      F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				      TrUserData);
+dfp_read_field_def_s2c_player_info(<<32, Rest/binary>>,
+				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				   F@_7, TrUserData) ->
     d_field_s2c_player_info_iGameCoin(Rest, Z1, Z2, F@_1,
-				      F@_2, F@_3, F@_4, F@_5, TrUserData);
-dfp_read_field_def_s2c_player_info(<<24, Rest/binary>>,
-				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5,
-				   TrUserData) ->
+				      F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				      TrUserData);
+dfp_read_field_def_s2c_player_info(<<40, Rest/binary>>,
+				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				   F@_7, TrUserData) ->
     d_field_s2c_player_info_iBankCoin(Rest, Z1, Z2, F@_1,
-				      F@_2, F@_3, F@_4, F@_5, TrUserData);
-dfp_read_field_def_s2c_player_info(<<34, Rest/binary>>,
-				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5,
-				   TrUserData) ->
+				      F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				      TrUserData);
+dfp_read_field_def_s2c_player_info(<<50, Rest/binary>>,
+				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				   F@_7, TrUserData) ->
     d_field_s2c_player_info_sPhone(Rest, Z1, Z2, F@_1, F@_2,
-				   F@_3, F@_4, F@_5, TrUserData);
-dfp_read_field_def_s2c_player_info(<<42, Rest/binary>>,
-				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5,
-				   TrUserData) ->
+				   F@_3, F@_4, F@_5, F@_6, F@_7, TrUserData);
+dfp_read_field_def_s2c_player_info(<<58, Rest/binary>>,
+				   Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				   F@_7, TrUserData) ->
     d_field_s2c_player_info_sIcon(Rest, Z1, Z2, F@_1, F@_2,
-				  F@_3, F@_4, F@_5, TrUserData);
+				  F@_3, F@_4, F@_5, F@_6, F@_7, TrUserData);
 dfp_read_field_def_s2c_player_info(<<>>, 0, 0, F@_1,
-				   F@_2, F@_3, F@_4, F@_5, _) ->
-    #s2c_player_info{sNickName = F@_1, iGameCoin = F@_2,
-		     iBankCoin = F@_3, sPhone = F@_4, sIcon = F@_5};
+				   F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, _) ->
+    #s2c_player_info{sToken = F@_1, iUserID = F@_2,
+		     sNickName = F@_3, iGameCoin = F@_4, iBankCoin = F@_5,
+		     sPhone = F@_6, sIcon = F@_7};
 dfp_read_field_def_s2c_player_info(Other, Z1, Z2, F@_1,
-				   F@_2, F@_3, F@_4, F@_5, TrUserData) ->
+				   F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				   TrUserData) ->
     dg_read_field_def_s2c_player_info(Other, Z1, Z2, F@_1,
-				      F@_2, F@_3, F@_4, F@_5, TrUserData).
+				      F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				      TrUserData).
 
 dg_read_field_def_s2c_player_info(<<1:1, X:7,
 				    Rest/binary>>,
-				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				  TrUserData)
+				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				  F@_7, TrUserData)
     when N < 32 - 7 ->
     dg_read_field_def_s2c_player_info(Rest, N + 7,
 				      X bsl N + Acc, F@_1, F@_2, F@_3, F@_4,
-				      F@_5, TrUserData);
+				      F@_5, F@_6, F@_7, TrUserData);
 dg_read_field_def_s2c_player_info(<<0:1, X:7,
 				    Rest/binary>>,
-				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				  TrUserData) ->
+				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				  F@_7, TrUserData) ->
     Key = X bsl N + Acc,
     case Key of
       10 ->
-	  d_field_s2c_player_info_sNickName(Rest, 0, 0, F@_1,
-					    F@_2, F@_3, F@_4, F@_5, TrUserData);
+	  d_field_s2c_player_info_sToken(Rest, 0, 0, F@_1, F@_2,
+					 F@_3, F@_4, F@_5, F@_6, F@_7,
+					 TrUserData);
       16 ->
+	  d_field_s2c_player_info_iUserID(Rest, 0, 0, F@_1, F@_2,
+					  F@_3, F@_4, F@_5, F@_6, F@_7,
+					  TrUserData);
+      26 ->
+	  d_field_s2c_player_info_sNickName(Rest, 0, 0, F@_1,
+					    F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+					    TrUserData);
+      32 ->
 	  d_field_s2c_player_info_iGameCoin(Rest, 0, 0, F@_1,
-					    F@_2, F@_3, F@_4, F@_5, TrUserData);
-      24 ->
+					    F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+					    TrUserData);
+      40 ->
 	  d_field_s2c_player_info_iBankCoin(Rest, 0, 0, F@_1,
-					    F@_2, F@_3, F@_4, F@_5, TrUserData);
-      34 ->
+					    F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+					    TrUserData);
+      50 ->
 	  d_field_s2c_player_info_sPhone(Rest, 0, 0, F@_1, F@_2,
-					 F@_3, F@_4, F@_5, TrUserData);
-      42 ->
+					 F@_3, F@_4, F@_5, F@_6, F@_7,
+					 TrUserData);
+      58 ->
 	  d_field_s2c_player_info_sIcon(Rest, 0, 0, F@_1, F@_2,
-					F@_3, F@_4, F@_5, TrUserData);
+					F@_3, F@_4, F@_5, F@_6, F@_7,
+					TrUserData);
       _ ->
 	  case Key band 7 of
 	    0 ->
 		skip_varint_s2c_player_info(Rest, 0, 0, F@_1, F@_2,
-					    F@_3, F@_4, F@_5, TrUserData);
+					    F@_3, F@_4, F@_5, F@_6, F@_7,
+					    TrUserData);
 	    1 ->
 		skip_64_s2c_player_info(Rest, 0, 0, F@_1, F@_2, F@_3,
-					F@_4, F@_5, TrUserData);
+					F@_4, F@_5, F@_6, F@_7, TrUserData);
 	    2 ->
 		skip_length_delimited_s2c_player_info(Rest, 0, 0, F@_1,
 						      F@_2, F@_3, F@_4, F@_5,
-						      TrUserData);
+						      F@_6, F@_7, TrUserData);
 	    3 ->
 		skip_group_s2c_player_info(Rest, Key bsr 3, 0, F@_1,
-					   F@_2, F@_3, F@_4, F@_5, TrUserData);
+					   F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+					   TrUserData);
 	    5 ->
 		skip_32_s2c_player_info(Rest, 0, 0, F@_1, F@_2, F@_3,
-					F@_4, F@_5, TrUserData)
+					F@_4, F@_5, F@_6, F@_7, TrUserData)
 	  end
     end;
 dg_read_field_def_s2c_player_info(<<>>, 0, 0, F@_1,
-				  F@_2, F@_3, F@_4, F@_5, _) ->
-    #s2c_player_info{sNickName = F@_1, iGameCoin = F@_2,
-		     iBankCoin = F@_3, sPhone = F@_4, sIcon = F@_5}.
+				  F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, _) ->
+    #s2c_player_info{sToken = F@_1, iUserID = F@_2,
+		     sNickName = F@_3, iGameCoin = F@_4, iBankCoin = F@_5,
+		     sPhone = F@_6, sIcon = F@_7}.
 
-d_field_s2c_player_info_sNickName(<<1:1, X:7,
-				    Rest/binary>>,
-				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				  TrUserData)
+d_field_s2c_player_info_sToken(<<1:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+			       TrUserData)
     when N < 57 ->
-    d_field_s2c_player_info_sNickName(Rest, N + 7,
-				      X bsl N + Acc, F@_1, F@_2, F@_3, F@_4,
-				      F@_5, TrUserData);
-d_field_s2c_player_info_sNickName(<<0:1, X:7,
-				    Rest/binary>>,
-				  N, Acc, _, F@_2, F@_3, F@_4, F@_5,
-				  TrUserData) ->
+    d_field_s2c_player_info_sToken(Rest, N + 7,
+				   X bsl N + Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
+				   F@_6, F@_7, TrUserData);
+d_field_s2c_player_info_sToken(<<0:1, X:7,
+				 Rest/binary>>,
+			       N, Acc, _, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+			       TrUserData) ->
     {NewFValue, RestF} = begin
 			   Len = X bsl N + Acc,
 			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
 			   {id(binary:copy(Bytes), TrUserData), Rest2}
 			 end,
     dfp_read_field_def_s2c_player_info(RestF, 0, 0,
-				       NewFValue, F@_2, F@_3, F@_4, F@_5,
+				       NewFValue, F@_2, F@_3, F@_4, F@_5, F@_6,
+				       F@_7, TrUserData).
+
+d_field_s2c_player_info_iUserID(<<1:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				F@_7, TrUserData)
+    when N < 57 ->
+    d_field_s2c_player_info_iUserID(Rest, N + 7,
+				    X bsl N + Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
+				    F@_6, F@_7, TrUserData);
+d_field_s2c_player_info_iUserID(<<0:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, _, F@_3, F@_4, F@_5, F@_6, F@_7,
+				TrUserData) ->
+    {NewFValue, RestF} = {begin
+			    <<Res:32/signed-native>> = <<(X bsl N +
+							    Acc):32/unsigned-native>>,
+			    id(Res, TrUserData)
+			  end,
+			  Rest},
+    dfp_read_field_def_s2c_player_info(RestF, 0, 0, F@_1,
+				       NewFValue, F@_3, F@_4, F@_5, F@_6, F@_7,
+				       TrUserData).
+
+d_field_s2c_player_info_sNickName(<<1:1, X:7,
+				    Rest/binary>>,
+				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				  F@_7, TrUserData)
+    when N < 57 ->
+    d_field_s2c_player_info_sNickName(Rest, N + 7,
+				      X bsl N + Acc, F@_1, F@_2, F@_3, F@_4,
+				      F@_5, F@_6, F@_7, TrUserData);
+d_field_s2c_player_info_sNickName(<<0:1, X:7,
+				    Rest/binary>>,
+				  N, Acc, F@_1, F@_2, _, F@_4, F@_5, F@_6, F@_7,
+				  TrUserData) ->
+    {NewFValue, RestF} = begin
+			   Len = X bsl N + Acc,
+			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
+			   {id(binary:copy(Bytes), TrUserData), Rest2}
+			 end,
+    dfp_read_field_def_s2c_player_info(RestF, 0, 0, F@_1,
+				       F@_2, NewFValue, F@_4, F@_5, F@_6, F@_7,
 				       TrUserData).
 
 d_field_s2c_player_info_iGameCoin(<<1:1, X:7,
 				    Rest/binary>>,
-				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				  TrUserData)
+				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				  F@_7, TrUserData)
     when N < 57 ->
     d_field_s2c_player_info_iGameCoin(Rest, N + 7,
 				      X bsl N + Acc, F@_1, F@_2, F@_3, F@_4,
-				      F@_5, TrUserData);
+				      F@_5, F@_6, F@_7, TrUserData);
 d_field_s2c_player_info_iGameCoin(<<0:1, X:7,
 				    Rest/binary>>,
-				  N, Acc, F@_1, _, F@_3, F@_4, F@_5,
+				  N, Acc, F@_1, F@_2, F@_3, _, F@_5, F@_6, F@_7,
 				  TrUserData) ->
     {NewFValue, RestF} = {begin
 			    <<Res:64/signed-native>> = <<(X bsl N +
@@ -500,19 +598,20 @@ d_field_s2c_player_info_iGameCoin(<<0:1, X:7,
 			  end,
 			  Rest},
     dfp_read_field_def_s2c_player_info(RestF, 0, 0, F@_1,
-				       NewFValue, F@_3, F@_4, F@_5, TrUserData).
+				       F@_2, F@_3, NewFValue, F@_5, F@_6, F@_7,
+				       TrUserData).
 
 d_field_s2c_player_info_iBankCoin(<<1:1, X:7,
 				    Rest/binary>>,
-				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				  TrUserData)
+				  N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6,
+				  F@_7, TrUserData)
     when N < 57 ->
     d_field_s2c_player_info_iBankCoin(Rest, N + 7,
 				      X bsl N + Acc, F@_1, F@_2, F@_3, F@_4,
-				      F@_5, TrUserData);
+				      F@_5, F@_6, F@_7, TrUserData);
 d_field_s2c_player_info_iBankCoin(<<0:1, X:7,
 				    Rest/binary>>,
-				  N, Acc, F@_1, F@_2, _, F@_4, F@_5,
+				  N, Acc, F@_1, F@_2, F@_3, F@_4, _, F@_6, F@_7,
 				  TrUserData) ->
     {NewFValue, RestF} = {begin
 			    <<Res:64/signed-native>> = <<(X bsl N +
@@ -521,83 +620,97 @@ d_field_s2c_player_info_iBankCoin(<<0:1, X:7,
 			  end,
 			  Rest},
     dfp_read_field_def_s2c_player_info(RestF, 0, 0, F@_1,
-				       F@_2, NewFValue, F@_4, F@_5, TrUserData).
+				       F@_2, F@_3, F@_4, NewFValue, F@_6, F@_7,
+				       TrUserData).
 
 d_field_s2c_player_info_sPhone(<<1:1, X:7,
 				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, TrUserData)
+			       N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+			       TrUserData)
     when N < 57 ->
     d_field_s2c_player_info_sPhone(Rest, N + 7,
 				   X bsl N + Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				   TrUserData);
+				   F@_6, F@_7, TrUserData);
 d_field_s2c_player_info_sPhone(<<0:1, X:7,
 				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, F@_3, _, F@_5, TrUserData) ->
+			       N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, _, F@_7,
+			       TrUserData) ->
     {NewFValue, RestF} = begin
 			   Len = X bsl N + Acc,
 			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
 			   {id(binary:copy(Bytes), TrUserData), Rest2}
 			 end,
     dfp_read_field_def_s2c_player_info(RestF, 0, 0, F@_1,
-				       F@_2, F@_3, NewFValue, F@_5, TrUserData).
+				       F@_2, F@_3, F@_4, F@_5, NewFValue, F@_7,
+				       TrUserData).
 
 d_field_s2c_player_info_sIcon(<<1:1, X:7, Rest/binary>>,
-			      N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, TrUserData)
+			      N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+			      TrUserData)
     when N < 57 ->
     d_field_s2c_player_info_sIcon(Rest, N + 7,
 				  X bsl N + Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				  TrUserData);
+				  F@_6, F@_7, TrUserData);
 d_field_s2c_player_info_sIcon(<<0:1, X:7, Rest/binary>>,
-			      N, Acc, F@_1, F@_2, F@_3, F@_4, _, TrUserData) ->
+			      N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, _,
+			      TrUserData) ->
     {NewFValue, RestF} = begin
 			   Len = X bsl N + Acc,
 			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
 			   {id(binary:copy(Bytes), TrUserData), Rest2}
 			 end,
     dfp_read_field_def_s2c_player_info(RestF, 0, 0, F@_1,
-				       F@_2, F@_3, F@_4, NewFValue, TrUserData).
+				       F@_2, F@_3, F@_4, F@_5, F@_6, NewFValue,
+				       TrUserData).
 
 skip_varint_s2c_player_info(<<1:1, _:7, Rest/binary>>,
-			    Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, TrUserData) ->
+			    Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+			    TrUserData) ->
     skip_varint_s2c_player_info(Rest, Z1, Z2, F@_1, F@_2,
-				F@_3, F@_4, F@_5, TrUserData);
+				F@_3, F@_4, F@_5, F@_6, F@_7, TrUserData);
 skip_varint_s2c_player_info(<<0:1, _:7, Rest/binary>>,
-			    Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, TrUserData) ->
+			    Z1, Z2, F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+			    TrUserData) ->
     dfp_read_field_def_s2c_player_info(Rest, Z1, Z2, F@_1,
-				       F@_2, F@_3, F@_4, F@_5, TrUserData).
+				       F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				       TrUserData).
 
 skip_length_delimited_s2c_player_info(<<1:1, X:7,
 					Rest/binary>>,
 				      N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				      TrUserData)
+				      F@_6, F@_7, TrUserData)
     when N < 57 ->
     skip_length_delimited_s2c_player_info(Rest, N + 7,
 					  X bsl N + Acc, F@_1, F@_2, F@_3, F@_4,
-					  F@_5, TrUserData);
+					  F@_5, F@_6, F@_7, TrUserData);
 skip_length_delimited_s2c_player_info(<<0:1, X:7,
 					Rest/binary>>,
 				      N, Acc, F@_1, F@_2, F@_3, F@_4, F@_5,
-				      TrUserData) ->
+				      F@_6, F@_7, TrUserData) ->
     Length = X bsl N + Acc,
     <<_:Length/binary, Rest2/binary>> = Rest,
     dfp_read_field_def_s2c_player_info(Rest2, 0, 0, F@_1,
-				       F@_2, F@_3, F@_4, F@_5, TrUserData).
+				       F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				       TrUserData).
 
 skip_group_s2c_player_info(Bin, FNum, Z2, F@_1, F@_2,
-			   F@_3, F@_4, F@_5, TrUserData) ->
+			   F@_3, F@_4, F@_5, F@_6, F@_7, TrUserData) ->
     {_, Rest} = read_group(Bin, FNum),
     dfp_read_field_def_s2c_player_info(Rest, 0, Z2, F@_1,
-				       F@_2, F@_3, F@_4, F@_5, TrUserData).
+				       F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				       TrUserData).
 
 skip_32_s2c_player_info(<<_:32, Rest/binary>>, Z1, Z2,
-			F@_1, F@_2, F@_3, F@_4, F@_5, TrUserData) ->
+			F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, TrUserData) ->
     dfp_read_field_def_s2c_player_info(Rest, Z1, Z2, F@_1,
-				       F@_2, F@_3, F@_4, F@_5, TrUserData).
+				       F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				       TrUserData).
 
 skip_64_s2c_player_info(<<_:64, Rest/binary>>, Z1, Z2,
-			F@_1, F@_2, F@_3, F@_4, F@_5, TrUserData) ->
+			F@_1, F@_2, F@_3, F@_4, F@_5, F@_6, F@_7, TrUserData) ->
     dfp_read_field_def_s2c_player_info(Rest, Z1, Z2, F@_1,
-				       F@_2, F@_3, F@_4, F@_5, TrUserData).
+				       F@_2, F@_3, F@_4, F@_5, F@_6, F@_7,
+				       TrUserData).
 
 read_group(Bin, FieldNum) ->
     {NumBytes, EndTagLen} = read_gr_b(Bin, 0, 0, 0, 0, FieldNum),
@@ -682,17 +795,29 @@ merge_msg_c2s_player_info(_Prev, New, _TrUserData) ->
     New.
 
 -compile({nowarn_unused_function,merge_msg_s2c_player_info/3}).
-merge_msg_s2c_player_info(#s2c_player_info{sNickName =
-					       PFsNickName,
+merge_msg_s2c_player_info(#s2c_player_info{sToken =
+					       PFsToken,
+					   iUserID = PFiUserID,
+					   sNickName = PFsNickName,
 					   iGameCoin = PFiGameCoin,
 					   iBankCoin = PFiBankCoin,
 					   sPhone = PFsPhone, sIcon = PFsIcon},
-			  #s2c_player_info{sNickName = NFsNickName,
+			  #s2c_player_info{sToken = NFsToken,
+					   iUserID = NFiUserID,
+					   sNickName = NFsNickName,
 					   iGameCoin = NFiGameCoin,
 					   iBankCoin = NFiBankCoin,
 					   sPhone = NFsPhone, sIcon = NFsIcon},
 			  _) ->
-    #s2c_player_info{sNickName =
+    #s2c_player_info{sToken =
+			 if NFsToken =:= undefined -> PFsToken;
+			    true -> NFsToken
+			 end,
+		     iUserID =
+			 if NFiUserID =:= undefined -> PFiUserID;
+			    true -> NFiUserID
+			 end,
+		     sNickName =
 			 if NFsNickName =:= undefined -> PFsNickName;
 			    true -> NFsNickName
 			 end,
@@ -746,29 +871,48 @@ v_msg_c2s_player_info(X, Path, _TrUserData) ->
 
 -compile({nowarn_unused_function,v_msg_s2c_player_info/3}).
 -dialyzer({nowarn_function,v_msg_s2c_player_info/3}).
-v_msg_s2c_player_info(#s2c_player_info{sNickName = F1,
-				       iGameCoin = F2, iBankCoin = F3,
-				       sPhone = F4, sIcon = F5},
+v_msg_s2c_player_info(#s2c_player_info{sToken = F1,
+				       iUserID = F2, sNickName = F3,
+				       iGameCoin = F4, iBankCoin = F5,
+				       sPhone = F6, sIcon = F7},
 		      Path, TrUserData) ->
     if F1 == undefined -> ok;
-       true ->
-	   v_type_string(F1, [sNickName | Path], TrUserData)
+       true -> v_type_string(F1, [sToken | Path], TrUserData)
     end,
     if F2 == undefined -> ok;
-       true -> v_type_int64(F2, [iGameCoin | Path], TrUserData)
+       true -> v_type_int32(F2, [iUserID | Path], TrUserData)
     end,
     if F3 == undefined -> ok;
-       true -> v_type_int64(F3, [iBankCoin | Path], TrUserData)
+       true ->
+	   v_type_string(F3, [sNickName | Path], TrUserData)
     end,
     if F4 == undefined -> ok;
-       true -> v_type_string(F4, [sPhone | Path], TrUserData)
+       true -> v_type_int64(F4, [iGameCoin | Path], TrUserData)
     end,
     if F5 == undefined -> ok;
-       true -> v_type_string(F5, [sIcon | Path], TrUserData)
+       true -> v_type_int64(F5, [iBankCoin | Path], TrUserData)
+    end,
+    if F6 == undefined -> ok;
+       true -> v_type_string(F6, [sPhone | Path], TrUserData)
+    end,
+    if F7 == undefined -> ok;
+       true -> v_type_string(F7, [sIcon | Path], TrUserData)
     end,
     ok;
 v_msg_s2c_player_info(X, Path, _TrUserData) ->
     mk_type_error({expected_msg, s2c_player_info}, X, Path).
+
+-compile({nowarn_unused_function,v_type_int32/3}).
+-dialyzer({nowarn_function,v_type_int32/3}).
+v_type_int32(N, _Path, _TrUserData)
+    when -2147483648 =< N, N =< 2147483647 ->
+    ok;
+v_type_int32(N, Path, _TrUserData) when is_integer(N) ->
+    mk_type_error({value_out_of_range, int32, signed, 32},
+		  N, Path);
+v_type_int32(X, Path, _TrUserData) ->
+    mk_type_error({bad_integer, int32, signed, 32}, X,
+		  Path).
 
 -compile({nowarn_unused_function,v_type_int64/3}).
 -dialyzer({nowarn_function,v_type_int64/3}).
@@ -842,15 +986,19 @@ cons(Elem, Acc, _TrUserData) -> [Elem | Acc].
 get_msg_defs() ->
     [{{msg, c2s_player_info}, []},
      {{msg, s2c_player_info},
-      [#field{name = sNickName, fnum = 1, rnum = 2,
+      [#field{name = sToken, fnum = 1, rnum = 2,
 	      type = string, occurrence = optional, opts = []},
-       #field{name = iGameCoin, fnum = 2, rnum = 3,
-	      type = int64, occurrence = optional, opts = []},
-       #field{name = iBankCoin, fnum = 3, rnum = 4,
-	      type = int64, occurrence = optional, opts = []},
-       #field{name = sPhone, fnum = 4, rnum = 5, type = string,
+       #field{name = iUserID, fnum = 2, rnum = 3, type = int32,
 	      occurrence = optional, opts = []},
-       #field{name = sIcon, fnum = 5, rnum = 6, type = string,
+       #field{name = sNickName, fnum = 3, rnum = 4,
+	      type = string, occurrence = optional, opts = []},
+       #field{name = iGameCoin, fnum = 4, rnum = 5,
+	      type = int64, occurrence = optional, opts = []},
+       #field{name = iBankCoin, fnum = 5, rnum = 6,
+	      type = int64, occurrence = optional, opts = []},
+       #field{name = sPhone, fnum = 6, rnum = 7, type = string,
+	      occurrence = optional, opts = []},
+       #field{name = sIcon, fnum = 7, rnum = 8, type = string,
 	      occurrence = optional, opts = []}]}].
 
 
@@ -881,15 +1029,19 @@ fetch_enum_def(EnumName) ->
 
 find_msg_def(c2s_player_info) -> [];
 find_msg_def(s2c_player_info) ->
-    [#field{name = sNickName, fnum = 1, rnum = 2,
+    [#field{name = sToken, fnum = 1, rnum = 2,
 	    type = string, occurrence = optional, opts = []},
-     #field{name = iGameCoin, fnum = 2, rnum = 3,
-	    type = int64, occurrence = optional, opts = []},
-     #field{name = iBankCoin, fnum = 3, rnum = 4,
-	    type = int64, occurrence = optional, opts = []},
-     #field{name = sPhone, fnum = 4, rnum = 5, type = string,
+     #field{name = iUserID, fnum = 2, rnum = 3, type = int32,
 	    occurrence = optional, opts = []},
-     #field{name = sIcon, fnum = 5, rnum = 6, type = string,
+     #field{name = sNickName, fnum = 3, rnum = 4,
+	    type = string, occurrence = optional, opts = []},
+     #field{name = iGameCoin, fnum = 4, rnum = 5,
+	    type = int64, occurrence = optional, opts = []},
+     #field{name = iBankCoin, fnum = 5, rnum = 6,
+	    type = int64, occurrence = optional, opts = []},
+     #field{name = sPhone, fnum = 6, rnum = 7, type = string,
+	    occurrence = optional, opts = []},
+     #field{name = sIcon, fnum = 7, rnum = 8, type = string,
 	    occurrence = optional, opts = []}];
 find_msg_def(_) -> error.
 

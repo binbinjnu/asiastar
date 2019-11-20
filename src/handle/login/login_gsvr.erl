@@ -43,8 +43,8 @@ init(_) ->
     {ok, []}.
 
 %% 确保创建角色不会重复
-handle_call({get_user_master, #user_master{} = BaseInfo}, _From, State) ->
-    #user_master{
+handle_call({get_user_master, #user_master_t{} = BaseInfo}, _From, State) ->
+    #user_master_t{
         account = Account,
         password = BasePassword
     } = BaseInfo,
@@ -52,7 +52,7 @@ handle_call({get_user_master, #user_master{} = BaseInfo}, _From, State) ->
     %% TODO 加上各种ets缓存(暂时不用缓存)
     Res =
         case db_mysql_api:select_user_master(Account) of
-            {ok, #user_master{password = Password} = UserMaster} ->
+            {ok, #user_master_t{password = Password} = UserMaster} ->
                 ?INFO("Password:~w, Md5Password:~w", [Password, Md5Password]),
                 %% 判断登录密码
                 case Md5Password =:= Password of
@@ -64,7 +64,7 @@ handle_call({get_user_master, #user_master{} = BaseInfo}, _From, State) ->
             ?NULL_VAL ->    %% 玩家不存在
                 UserID = index_gsvr:get_user_id(),
                 UserMaster =
-                    BaseInfo#user_master{
+                    BaseInfo#user_master_t{
                         user_id = UserID,
                         nick_name = Account,
                         password = Md5Password

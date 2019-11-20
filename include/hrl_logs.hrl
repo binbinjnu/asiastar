@@ -27,12 +27,12 @@
 -define(FORCE_ERROR(Format, Args), ?FORCE_ERROR(Format, Args, [])).
 
 -define(PRINT(X),
-    io:format("~p|~w:~w ====> ~p ~n", [logs_api:pname(), ?MODULE,?LINE,X])).
+    io:format("~p|~w:~w ====> ~p ~n", [util:process_name(), ?MODULE,?LINE,X])).
 
 -define(DEBUG(Format, Args), logs_api:debug_msg(?MODULE, ?LINE, ?FUNCTION_NAME, ?FUNCTION_ARITY, Format, Args)).
 -define(TRACE(X),
     ?DEBUG("~p", [X]),
-    io:format("~p|~w:~w/~w[~w] ==> ~p ~n", [logs_api:pname(),?MODULE,?FUNCTION_NAME,?FUNCTION_ARITY,?LINE,X])).
+    io:format("~p|~w:~w/~w[~w] ==> ~p ~n", [util:process_name(),?MODULE,?FUNCTION_NAME,?FUNCTION_ARITY,?LINE,X])).
 -define(TTRACE(X),
     io:format("~w:~w:~w.~w ~p|~w[~w] ==> ~p ~n",
         tuple_to_list(erlang:time()) ++ [erlang:system_time(milli_seconds) rem 1000, logs_api:pname(), ?MODULE, ?LINE,X])).

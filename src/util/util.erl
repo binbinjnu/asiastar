@@ -9,7 +9,11 @@
 -module(util).
 -author("Administrator").
 
+-include("hrl_logs.hrl").
+
 %% API
+-export([hot/1]).
+
 -export([
     get_call_from/0,
     erlang_get/2,
@@ -21,7 +25,12 @@
     deny_opts/2
 ]).
 
-
+hot(File) when is_atom(File) ->
+    hot([File]);
+hot(Files) when is_list(Files) ->
+    Res = os:cmd("rebar3 compile"),
+    ?INFO("~s", [Res]),
+    [c:nl(E) || E <- Files].
 
 get_call_from() ->
     lists:sublist(get_call_stack(), 3, 1).
@@ -100,3 +109,4 @@ deny_opts(Opts, Denies) ->
         [] -> ok;
         List -> erlang:error({invalid_opts, List})
     end.
+

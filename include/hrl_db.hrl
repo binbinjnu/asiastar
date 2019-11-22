@@ -36,3 +36,25 @@
     game_coin = 0,  %% 单位: 分
     bank_coin = 0   %% 单位: 分
 }).
+
+%% 子游戏
+-record(game_t, {
+    game_id = 0,        %% 游戏id
+    switch = 0,         %% 开关
+    game_name = <<>>    %% 游戏名
+}).
+
+%% 子游戏房间
+-record(game_room_t, {
+    room_id = 0,
+    game_id = 0,
+    room_name = <<>>,
+    room_type = 0,
+    switch = 0,
+    max_player_num = 0,     %% 同桌最大玩家数
+    min_enter_coin = 0,     %% 进入房间金钱下限（大于多少金钱才能进入）单位: 分
+    max_enter_coin = 0,     %% 进入房间金钱上限（小于多少金钱才能进入）单位: 分
+    base_coin = 0,          %% 底注 单位: 分
+    ratio_revenue = 0.0,    %% 抽水比例
+    create_time             %% 创建时间 {{Y, M, D}, {H, M, S}}
+}).

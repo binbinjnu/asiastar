@@ -27,3 +27,6 @@
 -define(SEC_HOUR, 3600).        % 小时
 -define(SEC_MINUTE, 60).        % 分
 -define(CLI_FRAME_TIME, 33).    % 前端每帧毫秒数
+
+-define(SWITCH_ON, 1).      %% 开关: 开
+-define(SWITCH_OFF, 0).     %% 开关: 关

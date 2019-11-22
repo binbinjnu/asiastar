@@ -125,9 +125,9 @@ select_all(Table, Fields) ->
         {ok, _, Lists} ->
             RecordL = [erlang:list_to_tuple([Table | E]) || E <- Lists],
             {ok, RecordL};
-        _Err ->
+        _Err -> %% 此处需要返回false, 上层调用需要报错或直接匹配异常
             ?WARNING("select index fail, Err:~w", [_Err]),
-            {ok, []}
+            ?false
     end.
 
 

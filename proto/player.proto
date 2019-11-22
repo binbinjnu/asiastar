@@ -1,6 +1,6 @@
 syntax = "proto3";
 package player;
-// 登录协议, 包括: 玩家相关信息和操作
+// 登录协议, 包括: 玩家相关信息和操作lhdserver
 // base 101
 
 // 玩家信息

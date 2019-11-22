@@ -15,7 +15,7 @@
 
 start(_StartType, _StartArgs) ->
     ok = pre_start(),
-    config:start(),
+    ok = config:start(),
 
     {ok, Sup} = ?MAIN_SUP:start_link(),
     %% 游戏启动db, 有些factory需要依赖db
@@ -37,17 +37,17 @@ start(_StartType, _StartArgs) ->
 %% 开启各个服务进程或者服务监控树
 start_factory() ->
     %% ets服务进程
-    ?MAIN_SUP:start_child(ets_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(ets_gsvr),
     %% 定时器进程
-    ?MAIN_SUP:start_child(timer_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(timer_gsvr),
     %% gc进程
-    ?MAIN_SUP:start_child(background_gc_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(background_gc_gsvr),
     %% 群组监控树
-    ?MAIN_SUP:start_child(group_sup, [], supervisor),
+    {ok, _} = ?MAIN_SUP:start_child(group_sup, [], supervisor),
     %% 进程检测监控树
-    ?MAIN_SUP:start_child(proc_checker_sup, [], supervisor),
+    {ok, _} = ?MAIN_SUP:start_child(proc_checker_sup, [], supervisor),
     %% index进程
-    ?MAIN_SUP:start_child(index_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(index_gsvr),
 
     ok.
 
@@ -58,24 +58,28 @@ start_net() ->
     Opts = #{handler => net_handler, socket_type => tcp},
     {ok, _} = net_api:start_listener(Ref, Port, Opts),  %% 开放网络
 
-    ?MAIN_SUP:start_child(net_debug_gsvr),      %% 网络包输出管理进程启动
-    proc_checker_sup:start_child(net_checker),  %% 网络进程监控
+    {ok, _} = ?MAIN_SUP:start_child(net_debug_gsvr),      %% 网络包输出管理进程启动
+    {ok, _} = proc_checker_sup:start_child(net_checker),  %% 网络进程监控
 
     ok.
 
 %% 启动数据库服务
 start_db() ->
-    db_mysql:start_mysql(),
+    ok = db_mysql:start_mysql(),
     ok.
 
 %% handle文件夹中的各种进程,监控树加载
 start_handle() ->
     %% 登录进程
-    ?MAIN_SUP:start_child(login_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(login_gsvr),
     %% 玩家进程监控树
-    ?MAIN_SUP:start_child(player_sup, [], supervisor),
-    proc_checker_sup:start_child(player_checker), %% 玩家进程监控进程
+    {ok, _} = ?MAIN_SUP:start_child(player_sup, [], supervisor),
+    {ok, _} = proc_checker_sup:start_child(player_checker), %% 玩家进程监控进程
 
+    %% game mgr 监控树和 game 监控树
+    {ok, _} = ?MAIN_SUP:start_child(game_mgr_sup, [], supervisor),  %% game mgr监控树
+    {ok, _} = game_mgr_sup:start_child(game_sup, [], supervisor),   %% game监控树
+    {ok, _} = game_mgr_sup:start_child(game_mgr_main_gsvr), %% 主管理进程
     ok.
 
 

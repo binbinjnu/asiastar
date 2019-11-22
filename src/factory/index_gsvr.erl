@@ -56,9 +56,10 @@ get_ids(Key, N) ->
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
+%% 初始化不成功的话, 外面调用启动进程的会报错, 整个服开不起来
 init(_) ->
     ets_gsvr:new(?ETS_TAB, [named_table, public, {keypos, 1}, {write_concurrency, true}]),
-    db_mysql_api:create_table_index(),  %% 如果表不存在, 则新建表
+%%    db_mysql_api:create_table_index(),  %% 如果表不存在, 则新建表
     KVList = db_mysql_api:select_index(),
     ets:insert(?ETS_TAB, KVList),
     erlang:process_flag(trap_exit, ?true),
@@ -91,8 +92,8 @@ terminate(_Reason, _State) ->
 
 
 init_index() ->
-    init_user_id(),
-    init_index(mail_id, 1000),
+    ok = init_user_id(),
+    ok = init_index(mail_id, 1000),
     ok.
 
 %% 初始化user_id
@@ -107,10 +108,11 @@ init_user_id() ->
                 _ ->
                     ?NOTICE("Index ~p is inited with number ~w", [user_id, LimitUserID]),
                     ets:insert(?ETS_TAB, {user_id, LimitUserID})
-            end;
+            end,
+            ok;
         _ ->
             ?WARNING("can not get user master max user id!"),
-            ok
+            ?false
     end.
 
 init_index(Key, Init) when is_integer(Init)->
@@ -122,6 +124,7 @@ init_index(Key, Init) when is_integer(Init)->
         [{_, Val, _}] ->
             ?INFO("Index ~p is inited with number ~w", [Key, Val]),
             Val
-    end.
+    end,
+    ok.
 
 

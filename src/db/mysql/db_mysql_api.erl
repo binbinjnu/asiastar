@@ -46,12 +46,19 @@
     update_user_money/1
 ]).
 
+%% replace
+-export([
+    replace_game_room/1
+]).
+
 %% select
 -export([
     select_user_master/1,
     select_user_money/1,
     select_user_master_max_user_id/0,
-    select_index/0
+    select_index/0,
+    select_game/0,
+    select_game_room/0
 ]).
 
 prepare_list() ->
@@ -116,6 +123,10 @@ insert_user_money(UserMoney) ->
 
 
 %%% ------------------------------- replace -------------------------------
+%% replace 子游戏房间信息
+replace_game_room(GameRoom) ->
+    Fields = record_info(fields, game_room_t),
+    db_mysql_command:replace_one(game_room_t, Fields, GameRoom).
 
 
 %%% ------------------------------- update -------------------------------
@@ -133,7 +144,7 @@ select_user_master(Account) ->
 %% 获取最大user_id
 select_user_master_max_user_id() ->
     case mysql_poolboy:query(?POOL_NAME, "SELECT max(user_id) FROM user_master_t;") of
-        {ok, _, [[MaxUserID]]} ->
+        {ok, _, [[MaxUserID]]} ->   %% 如果没有数据, MaxUserID为null
             {ok, MaxUserID};
         _Err ->
             ?WARNING("select user master max user id fail, Err:~w", [_Err]),
@@ -150,3 +161,13 @@ select_index() ->
 select_user_money(UserID) ->
     Fields = record_info(fields, user_money_t),
     db_mysql_command:select_by_key(user_money_t, user_id, UserID, Fields).
+
+%% 获取所有子游戏信息
+select_game() ->
+    Fields = record_info(fields, game_t),
+    db_mysql_command:select_all(game_t, Fields).
+
+%% 获取所有房间信息
+select_game_room() ->
+    Fields = record_info(fields, game_room_t),
+    db_mysql_command:select_all(game_room_t, Fields).

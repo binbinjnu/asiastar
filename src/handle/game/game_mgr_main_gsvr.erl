@@ -109,7 +109,7 @@ do_info(init, _State) ->
         {noreply, State}
     catch
         Err:Reason ->
-            %% 开启不成功, 需要关闭进程
+            %% 开启不成功, 需要关闭程序
             ?ERROR("~w init fail, Err:~w, Reason:~w", [?MODULE, Err, Reason]),
             timer:sleep(200),
             erlang:halt(110)

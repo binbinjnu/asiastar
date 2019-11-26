@@ -15,7 +15,9 @@
     string_to_term/1,
     term_to_bitstring/1,
     bitstring_to_term/1,
-    md5/1
+    md5/1,
+    bool2int/1,
+    int2bool/1
 ]).
 
 -export([
@@ -59,3 +61,13 @@ term_to_bitstring(Term) ->
 md5(S) ->
     lists:flatten([io_lib:format("~2.16.0b",[N]) || N <- binary_to_list(erlang:md5(S))]).
 
+%% bool型转int
+bool2int(B) ->
+    case B of
+        true -> 1;
+        false -> 0
+    end.
+
+%% int转bool
+int2bool(I) ->
+    I > 0.

@@ -12,12 +12,10 @@
 
 -include("hrl_common.hrl").
 -include("hrl_logs.hrl").
+-include("hrl_game.hrl").
 
 -export([start/3]).
 -export([start_link/3, init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
-
-%%-record(game_table, {
-%%}).
 
 %% 开启进程接口
 start(GameID, RoomType, TableID) ->
@@ -27,8 +25,15 @@ start(GameID, RoomType, TableID) ->
 start_link(GameID, RoomType, TableID) ->
     gen_server:start_link(?MODULE, [GameID, RoomType, TableID], []).
 
-init([_GameID, _RoomType, _TableID]) ->
-    {ok, []}.
+init([GameID, RoomType, TableID]) ->
+
+    GameTable =
+        #game_table{
+            game_id = GameID,
+            room_type = RoomType,
+            table_id = TableID
+        },
+    {ok, GameTable}.
 
 handle_call(Request, From, State) ->
     try

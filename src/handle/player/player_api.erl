@@ -58,7 +58,7 @@ ensure_player(UserID) ->
         Pid when is_pid(Pid) ->
             {ok, reconnect, Pid};
         _ ->    %% 新建进程
-            case player_gsvr:start(UserID) of
+            case player_svr:start(UserID) of
                 {ok, Pid} ->
                     {ok, connect, Pid};
                 _E ->

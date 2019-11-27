@@ -55,7 +55,7 @@ new(GroupType) ->
     Opts :: [term()],
     GroupType :: pid() | term().
 new(GroupType, Opts) ->
-    group_manager_gsvr:new(GroupType, Opts).
+    group_manager_svr:new(GroupType, Opts).
 
 
 -spec close(GroupType) -> ok when
@@ -239,4 +239,4 @@ groups(GroupType) ->
 
 
 group_svr(GroupType) ->
-    group_manager_gsvr:group_pid(GroupType).
+    group_manager_svr:group_pid(GroupType).

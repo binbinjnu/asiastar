@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 31. 10月 2019 18:43
 %%%-------------------------------------------------------------------
--module(proc_checker_gsvr).
+-module(proc_checker_svr).
 -author("Administrator").
 -behaviour(gen_server).
 
@@ -46,7 +46,7 @@ init(Args) ->
     KillMsgQ = maps:get(kill_msg_q, Args, ?DEFAULT_KILL_MSG_Q),
     CheckMsgQ = maps:get(check_msg_q, Args, ?DEFAULT_CHECK_MSG_Q),
     CheckTimeout = maps:get(check_timeout, Args, ?DEFAULT_CHECK_TIMEOUT),
-    timer_gsvr:reg(self(), Interval),
+    timer_svr:reg(self(), Interval),
     Slots = erlang:list_to_tuple(lists:duplicate(SlotNum, [])),
     {ok, #state{loop = 0,
         slots = Slots,

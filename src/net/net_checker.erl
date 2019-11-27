@@ -15,7 +15,7 @@
 
 reg() ->
     Pid = self(),
-    proc_checker_gsvr:reg(?MODULE, Pid).
+    proc_checker_svr:reg(?MODULE, Pid).
 
 start_link() ->
     Args = #{
@@ -25,5 +25,5 @@ start_link() ->
         check_msg_q => 0,
         check_timeout => 10000  %% 网络进程检查超时, ms
     },
-    proc_checker_gsvr:start_link(?MODULE, Args).
+    proc_checker_svr:start_link(?MODULE, Args).
 

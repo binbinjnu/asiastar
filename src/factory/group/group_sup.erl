@@ -22,11 +22,11 @@
 
 start_child(Args) ->
     Child = #{id => {group, Args},
-        start => {group_gsvr, start_link, Args},
+        start => {group_svr, start_link, Args},
         restart => temporary,
         shutdown => 2000,
         type => worker,
-        modules => [group_gsvr]},
+        modules => [group_svr]},
     supervisor:start_child(?MODULE, Child).
 
 start_link() ->
@@ -40,11 +40,11 @@ init([]) ->
     SupFlags = #{strategy => one_for_one,
                 intensity => 10,
                 period => 10},
-    ChildSpec = #{id => group_manager_gsvr,
-                start => {group_manager_gsvr, start_link, []},
+    ChildSpec = #{id => group_manager_svr,
+                start => {group_manager_svr, start_link, []},
                 restart => permanent,
                 shutdown => 30000,
                 type => worker,
-                modules => [group_manager_gsvr]},
+                modules => [group_manager_svr]},
     {ok, {SupFlags, [ChildSpec]}}.
 

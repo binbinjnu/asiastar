@@ -7,7 +7,7 @@
 %%% @end
 %%% Created : 31. 10月 2019 18:43
 %%%-------------------------------------------------------------------
--module(game_mgr_gsvr).
+-module(game_mgr_svr).
 -author("Administrator").
 -behaviour(gen_server).
 
@@ -68,7 +68,7 @@ enter_game(GameID, RoomType, GameCoin) ->
 
 
 start(GameID) ->
-    game_mgr_sup:start_child(game_mgr_gsvr, [GameID]).
+    game_mgr_sup:start_child(game_mgr_svr, [GameID]).
 
 start_link(GameID) ->
     RegName = util_code:reg_name([?MODULE, "_", GameID]),
@@ -79,7 +79,7 @@ init([GameID]) ->
     %% 到数据库中找有对应GameID的数据
     ?INFO("game mgr gsvr init! GameID:~w", [GameID]),
     %% 通知父进程自己开启成功
-    game_mgr_main_gsvr:sub_process_init(GameID, self()),
+    game_mgr_main_svr:sub_process_init(GameID, self()),
     self() ! init,
     {ok, #state{game_id = GameID}}.
 
@@ -212,7 +212,7 @@ do_select_table(_PNumLimit, _RoomType, _TableID, _MaxTableID) ->
 
 %% 开启桌台
 create_table(GameID, RoomType, TableID) ->
-    case game_gsvr:start(GameID, RoomType, TableID) of
+    case game_svr:start(GameID, RoomType, TableID) of
         {ok, Pid} ->
             GameTable = #game_table{table_id = TableID, pid = Pid},
             erlang:put({table, RoomType, TableID}, GameTable),

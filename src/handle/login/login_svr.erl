@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 16. 11月 2019 19:29
 %%%-------------------------------------------------------------------
--module(login_gsvr).
+-module(login_svr).
 -author("Administrator").
 
 -behaviour(gen_server).
@@ -62,7 +62,7 @@ handle_call({get_user_master, #user_master_t{} = BaseInfo}, _From, State) ->
                         {?false, err_password}
                 end;
             ?NULL_VAL ->    %% 玩家不存在
-                UserID = index_gsvr:get_user_id(),
+                UserID = index_svr:get_user_id(),
                 UserMaster =
                     BaseInfo#user_master_t{
                         user_id = UserID,

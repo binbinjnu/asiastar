@@ -14,7 +14,7 @@
 %% Copyright (c) 2007-2014 GoPivotal, Inc.  All rights reserved.
 %%
 
--module(background_gc_gsvr).
+-module(background_gc_svr).
 
 -behaviour(gen_server).
 

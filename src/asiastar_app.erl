@@ -37,17 +37,17 @@ start(_StartType, _StartArgs) ->
 %% 开启各个服务进程或者服务监控树
 start_factory() ->
     %% ets服务进程
-    {ok, _} = ?MAIN_SUP:start_child(ets_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(ets_svr),
     %% 定时器进程
-    {ok, _} = ?MAIN_SUP:start_child(timer_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(timer_svr),
     %% gc进程
-    {ok, _} = ?MAIN_SUP:start_child(background_gc_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(background_gc_svr),
     %% 群组监控树
     {ok, _} = ?MAIN_SUP:start_child(group_sup, [], supervisor),
     %% 进程检测监控树
     {ok, _} = ?MAIN_SUP:start_child(proc_checker_sup, [], supervisor),
     %% index进程
-    {ok, _} = ?MAIN_SUP:start_child(index_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(index_svr),
 
     ok.
 
@@ -58,7 +58,7 @@ start_net() ->
     Opts = #{handler => net_handler, socket_type => tcp},
     {ok, _} = net_api:start_listener(Ref, Port, Opts),  %% 开放网络
 
-    {ok, _} = ?MAIN_SUP:start_child(net_debug_gsvr),      %% 网络包输出管理进程启动
+    {ok, _} = ?MAIN_SUP:start_child(net_debug_svr),      %% 网络包输出管理进程启动
     {ok, _} = proc_checker_sup:start_child(net_checker),  %% 网络进程监控
 
     ok.
@@ -71,7 +71,7 @@ start_db() ->
 %% handle文件夹中的各种进程,监控树加载
 start_handle() ->
     %% 登录进程
-    {ok, _} = ?MAIN_SUP:start_child(login_gsvr),
+    {ok, _} = ?MAIN_SUP:start_child(login_svr),
     %% 玩家进程监控树
     {ok, _} = ?MAIN_SUP:start_child(player_sup, [], supervisor),
     {ok, _} = proc_checker_sup:start_child(player_checker), %% 玩家进程监控进程
@@ -79,14 +79,14 @@ start_handle() ->
     %% game mgr 监控树和 game 监控树
     {ok, _} = ?MAIN_SUP:start_child(game_mgr_sup, [], supervisor),  %% game mgr监控树
     {ok, _} = game_mgr_sup:start_child(game_sup, [], supervisor),   %% game监控树
-    {ok, _} = game_mgr_sup:start_child(game_mgr_main_gsvr), %% 主管理进程
+    {ok, _} = game_mgr_sup:start_child(game_mgr_main_svr), %% 主管理进程
     ok.
 
 
 %% 在一些服务start后, 启动一些游戏逻辑相关的
 after_start() ->
-    ets_gsvr:hold_new(ets_uid_acc, [public, named_table, {keypos, 1}]),         %% uid对应账号
-    ets_gsvr:hold_new(ets_nickname_uid, [public, named_table, {keypos, 1}]),    %% 角色名对应uid
+    ets_svr:hold_new(ets_uid_acc, [public, named_table, {keypos, 1}]),         %% uid对应账号
+    ets_svr:hold_new(ets_nickname_uid, [public, named_table, {keypos, 1}]),    %% 角色名对应uid
 
     group_api:new(world_player),    %% 全局用, 直接new
     group_api:new(world_sender),    %% 全局用, 直接new

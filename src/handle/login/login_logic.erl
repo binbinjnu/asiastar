@@ -39,7 +39,7 @@ login(#c2s_login{sAccount = Account} = Req, State) ->
             password = Password,
             channel = Channel
         },
-    case login_gsvr:get_user_master(BaseInfo) of
+    case login_svr:get_user_master(BaseInfo) of
         {ok, OldOrNew, UserMaster} ->
             Pid = enter(UserMaster),
             Resp = #s2c_login{iCode = 0},

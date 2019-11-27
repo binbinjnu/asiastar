@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 30. 10月 2019 20:53
 %%%-------------------------------------------------------------------
--module(net_debug_gsvr).
+-module(net_debug_svr).
 -author("Administrator").
 -behaviour(gen_server).
 

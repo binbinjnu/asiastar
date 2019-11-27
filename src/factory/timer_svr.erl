@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 31. 10月 2019 18:48
 %%%-------------------------------------------------------------------
--module(timer_gsvr).
+-module(timer_svr).
 -author("Administrator").
 -behavior(gen_server).
 

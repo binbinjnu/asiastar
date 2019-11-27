@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 04. 11月 2019 19:20
 %%%-------------------------------------------------------------------
--module(group_gsvr).
+-module(group_svr).
 -author("Administrator").
 -behaviour(gen_server).
 

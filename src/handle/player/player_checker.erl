@@ -15,7 +15,7 @@
 
 reg() ->
     Pid = self(),
-    proc_checker_gsvr:reg(?MODULE, Pid).
+    proc_checker_svr:reg(?MODULE, Pid).
 
 start_link() ->
     Args = #{
@@ -24,5 +24,5 @@ start_link() ->
         kill_msg_q => 2000,
         check_msg_q => 9999 % 设置成很长, 比kill_msg_q长, 不会做call检查
     },
-    proc_checker_gsvr:start_link(?MODULE, Args).
+    proc_checker_svr:start_link(?MODULE, Args).
 

@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 04. 11月 2019 19:03
 %%%-------------------------------------------------------------------
--module(group_manager_gsvr).
+-module(group_manager_svr).
 -author("Administrator").
 -behaviour(gen_server).
 
@@ -56,7 +56,7 @@ start_link() ->
 
 
 init([]) ->
-    ets_gsvr:new(?ETS_TAB, [named_table, protected, {keypos, 1}, {read_concurrency, true}]),
+    ets_svr:new(?ETS_TAB, [named_table, protected, {keypos, 1}, {read_concurrency, true}]),
     {ok, #state{}}.
 
 

@@ -32,12 +32,12 @@ start_link() ->
 init([]) ->
     erlang:process_flag(priority, high),
     {ok, { {simple_one_for_one, 0, 1},
-        [{player_gsvr,
-            {player_gsvr, start_link, []},
+        [{player_svr,
+            {player_svr, start_link, []},
             temporary,
             10000,
             worker,
-            [player_gsvr]}
+            [player_svr]}
         ]}}.
 
 all_players() ->

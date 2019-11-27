@@ -9,8 +9,14 @@
 %%%-------------------------------------------------------------------
 -author("Administrator").
 
--define(POOL_NAME, config:get_app()).   %% asiastar
+-define(POOL_NAME, pool).       %%
 -define(NULL_VAL, null_val).        %% 数据库返回空值
+
+%% kv data
+-record(kv_data, {
+    id,     %% id
+    data    %% 二进制数据 mediumblob, 16M
+}).
 
 %%% 普通表名接后缀 _t
 %% index表
@@ -58,3 +64,4 @@
     ratio_revenue = 0.0,    %% 抽水比例
     create_time             %% 创建时间 {{Y, M, D}, {H, M, S}}
 }).
+

@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 16. 11月 2019 13:04
 %%%-------------------------------------------------------------------
--module(index_gsvr).
+-module(index_svr).
 -author("Administrator").
 -behaviour(gen_server).
 
@@ -58,7 +58,7 @@ start_link() ->
 
 %% 初始化不成功的话, 外面调用启动进程的会报错, 整个服开不起来
 init(_) ->
-    ets_gsvr:new(?ETS_TAB, [named_table, public, {keypos, 1}, {write_concurrency, true}]),
+    ets_svr:new(?ETS_TAB, [named_table, public, {keypos, 1}, {write_concurrency, true}]),
 %%    db_mysql_api:create_table_index(),  %% 如果表不存在, 则新建表
     KVList = db_mysql_api:select_index(),
     ets:insert(?ETS_TAB, KVList),

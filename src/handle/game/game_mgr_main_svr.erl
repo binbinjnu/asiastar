@@ -7,7 +7,7 @@
 %%% @end
 %%% Created : 31. 10月 2019 18:43
 %%%-------------------------------------------------------------------
--module(game_mgr_main_gsvr).
+-module(game_mgr_main_svr).
 -author("Administrator").
 -behaviour(gen_server).
 
@@ -150,7 +150,7 @@ local_init() ->
     ?INFO("LGame:~w", [LGame]),
     State#state{l_game = LGame}.
 
-%% 开启game_mgr_gsvr
+%% 开启game_mgr_svr
 local_start_game_mgr(GameID, #state{l_game = LGame} = _State) ->
     case lists:keyfind(GameID, #game_mgr.game_id, LGame) of
         #game_mgr{pid = Pid} when is_pid(Pid) ->
@@ -166,7 +166,7 @@ local_start_game_mgr(GameID, #state{l_game = LGame} = _State) ->
     end.
 
 do_start_game_mgr(GameID) ->
-    case game_mgr_gsvr:start(GameID) of
+    case game_mgr_svr:start(GameID) of
         {ok, Pid} ->
             {ok, Pid};
         _R ->

@@ -41,9 +41,9 @@ should_init() ->
         0 ->
             ?false;
         1 ->
-            net_debug_gsvr:should_log(UID);
+            net_debug_svr:should_log(UID);
         Filter when Filter > 0 andalso UID rem Filter =:= 1 ->
-            net_debug_gsvr:should_log(UID);
+            net_debug_svr:should_log(UID);
         _ ->
             ?false
     end.

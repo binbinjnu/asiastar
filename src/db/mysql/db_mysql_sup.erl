@@ -3,7 +3,7 @@
 %% @end
 %%%-------------------------------------------------------------------
 
--module(xf_sql_sup).
+-module(db_mysql_sup).
 
 -behaviour(supervisor).
 

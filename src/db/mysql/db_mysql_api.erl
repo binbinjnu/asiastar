@@ -37,18 +37,12 @@
 
 %% insert
 -export([
+    insert_from_ets/4,
+
     insert_user_master/1,
-    insert_user_money/1
-]).
+    insert_user_money/1,
 
-%% update
--export([
-    update_user_money/1
-]).
-
-%% replace
--export([
-    replace_game_room/1
+    insert_game_room/1
 ]).
 
 %% select
@@ -60,6 +54,10 @@
     select_game/0,
     select_game_room/0
 ]).
+
+-define(MAX_INSERT_NUM, 300).   %% 一次最大插入数
+-define(MAX_READ_NUM, 300).     %% MySQL 一次读取最大条数
+-define(MAX_RETRY_NUM, 3).      %% MySQL 最大重试次数
 
 prepare_list() ->
     [
@@ -111,29 +109,61 @@ create_table_index() ->
 
 
 %%% ------------------------------- insert -------------------------------
+%% 从ETS读取数据向数据库中插入, 传入Key的列表,
+%% 当数据量过大时自动分段, 全部成功返ok
+insert_from_ets(Table, Keys, Fields, Transfers) when is_list(Keys) ->
+    KeyPos = ets:info(Table, keypos),
+    insert_from_ets_retry(Table, Keys, KeyPos, Fields, Transfers, ?MAX_RETRY_NUM, 0).
+
+insert_from_ets_retry(_Table, [], _KeyPos, _Fields, _Transfers, _MaxRetry, _N) ->
+    ok;
+insert_from_ets_retry(Table, Keys, KeyPos, Fields, Transfers, MaxRetry, N) ->
+    F = fun(IDs, Success) ->
+            Records = find_in_ets(Table, Transfers, IDs),
+            Success andalso db_mysql_command:insert(Table, Fields, Records) =:= ok
+        end,
+    case util_list:batch(F, ?true, Keys, ?MAX_INSERT_NUM) of
+        ?true ->
+            ok;
+        _Error when N < MaxRetry ->
+            insert_from_ets_retry(Table, Keys, KeyPos, Fields, Transfers, MaxRetry, N + 1);
+        Error ->
+            Error
+    end.
+
+find_in_ets(Table, Transfers, IDs) ->
+    find_in_ets(Table, Transfers, IDs, []).
+
+find_in_ets(_Table, _Transfers, [], AccData) ->
+    AccData;
+find_in_ets(Table, Transfers, [ID|T], AccData) ->
+    case ets:lookup(Table, ID) of
+        [Data] ->
+            %% todo 需要把transfers中对应的值进行term_to_bitstring转换
+            Data1 = [Data | AccData],
+            find_in_ets(Table, Transfers, T, Data1);
+        _E ->
+            ?WARNING("Error data got in ets ~p for id ~w, got: ~p", [Table, ID, _E]),
+            find_in_ets(Table, Transfers, T, AccData)
+    end.
+
+
 %% 插入玩家信息
 insert_user_master(UserMaster) ->
     Fields = record_info(fields, user_master_t),
-    db_mysql_command:insert_one(user_master_t, Fields, UserMaster).
+    db_mysql_command:insert(user_master_t, Fields, UserMaster).
 
 %% 插入玩家金钱信息
 insert_user_money(UserMoney) ->
     Fields = record_info(fields, user_money_t),
-    db_mysql_command:insert_one(user_money_t, Fields, UserMoney).
+    db_mysql_command:insert(user_money_t, Fields, UserMoney).
 
 
-%%% ------------------------------- replace -------------------------------
-%% replace 子游戏房间信息
-replace_game_room(GameRoom) ->
+%% 子游戏房间信息
+insert_game_room(GameRoom) ->
     Fields = record_info(fields, game_room_t),
-    db_mysql_command:replace_one(game_room_t, Fields, GameRoom).
+    db_mysql_command:insert(game_room_t, Fields, GameRoom).
 
-
-%%% ------------------------------- update -------------------------------
-%% 更新玩家金钱
-update_user_money(#user_money_t{user_id = UserID} = UserMoney) ->
-    Fields = record_info(fields, user_money_t),
-    db_mysql_command:update_by_key(user_money_t, user_id, UserID, Fields, UserMoney).
 
 %%% ------------------------------- select -------------------------------
 %% 判断账号是否存在

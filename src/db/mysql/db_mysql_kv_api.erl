@@ -6,16 +6,17 @@
 %%% @end
 %%% Created : 26. 11月 2019 16:04
 %%%-------------------------------------------------------------------
--module(xf_sql).
+-module(db_mysql_kv_api).
 -author("Administrator").
 
 -include("hrl_logs.hrl").
 -include("hrl_db.hrl").
+-include("hrl_common.hrl").
 
 %% API
 -export([
+    open/2
 ]).
-
 
 
 %% 打开一个数据库表, 如果不存在则新建
@@ -32,24 +33,15 @@
 %%          {varbinary, N} 表示 VARBINARY(N)
 %% {index_modified, Bool} 表示是否对修改时间进行索引, 默认为false,
 %%          使用转换服的表需要设置为true
-%%open(Table, Opts) ->
-%%    case proplists:get_value(mnesia, Opts) of
-%%        ?undefined ->
-%%            case proplists:get_bool(protected, Opts)
-%%                orelse proplists:get_bool(private, Opts) of
-%%                ?true ->
-%%                    fg_ets:new(Table, Opts);
-%%                _ ->
-%%                    ok = fg_ets:hold_new(Table, Opts)
-%%            end;
-%%        MnesiaOpts ->
-%%            {atomic, ok} = mnesia:create_table(Table, MnesiaOpts)
-%%    end,
-%%    StoreArgs = #{
-%%        table         => Table,
-%%        data_compress => proplists:get_value(data_compress, Opts, 0)
-%%    },
-%%    SqlOpts = [{save_func, {fg_sql_inf, kv_insert_from_ets, StoreArgs}}|Opts],
-%%    {ok, _} = fg_sql_svr:start(Table, SqlOpts),
-%%
-%%    ok = fg_sql_inf:ensure_kv_table(Table, Opts).
+open(Table, Opts) ->
+    case proplists:get_bool(protected, Opts) orelse proplists:get_bool(private, Opts) of
+        ?true ->
+            ets_svr:new(Table, Opts);
+        _ ->
+            ets_svr:hold_new(Table, Opts)
+    end,
+    Compress = proplists:get_value(data_compress, Opts, 0),
+    Opts1 = [{save_func, {db_mysql_kv_command, kv_insert_from_ets, [Compress]}} | Opts],
+    {ok, _} = db_mysql_svr:start(Table, Opts1),
+
+    ok = db_mysql_kv_command:ensure_kv_table(Table, Opts).

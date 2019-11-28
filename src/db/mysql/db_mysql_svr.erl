@@ -8,7 +8,7 @@
 %%% @end
 %%% Created : 26. 11月 2019 9:33
 %%%-------------------------------------------------------------------
--module(xf_sql_svr).
+-module(db_mysql_svr).
 -author("Administrator").
 -behaviour(gen_server).
 
@@ -35,22 +35,18 @@
 
 -record(state, {
     table          = ?undefined,    %% 表名
+    key            = ?undefined,    %% 主键字段名
+    fields         = ?undefined,    %% 对应fields, 如果是kv的, 用
+    transfer       = [],            %% 需要转换的element, term_to_bitstring和bitstring_to_term
     loop           = 0,             %%
     save_func      = ?undefined,    %% 存储函数
     inserts        = ?undefined,    %% 需要插入的数据  gb_sets
     deletes        = ?undefined,    %% 需要删除的数据  gb_sets
     period         = ?undefined,    %% flush周期, 可以照着周期划分对应的槽位, 每次loop检测对应的rem值的槽位
-    period_insert  = ?undefined,    %% gb_trees, 里面放有对应period个的gb_sets
-
-    %% 这个对于存储来说没用处
-    hot_marker     = ?undefined,    %%
-    cool_down      = ?undefined,    %% 缓存冷却时间(冷却后进行insert\delete)
-    cool_down_check = 0             %% 不同的表分散开来check, 在1-cool_down建随机一个check点
+    period_insert  = ?undefined     %% gb_trees, 里面放有对应period个的gb_sets
 }).
 
 -define(INSERT_INTERVAL, 300).  %% 存储间隔 单位 s
--define(CACHE_COOL_DOWN, 3600). %% 缓存冷却时间 单位 s
--define(COOL_DOWN_CHECK_LOOP, 400). %% 每N个循环检查一次缓存冷却
 
 %% 等待开启成功
 wait_ready(Table) ->
@@ -66,7 +62,7 @@ flush(Table) ->
 
 %% 获取所有表名
 all_tables() ->
-    Children = supervisor:which_children(xf_sql_sup),
+    Children = supervisor:which_children(db_mysql_sup),
     Tables = [Table || {{?MODULE, [Table, _Opts]}, _Pid, _Type, _Module} <- Children],
     Tables.
 
@@ -80,7 +76,7 @@ start(Table, Opts) ->
     Name = server_name(Table),
     case erlang:whereis(Name) of
         ?undefined ->
-            xf_sql_sup:start_child(?MODULE, [Table, Opts]);
+            db_mysql_sup:start_child(?MODULE, [Table, Opts]);
         Pid ->
             ?WARNING("Table ~p already opened", [Table]),
             {ok, Pid}
@@ -104,9 +100,8 @@ init([Table, Opts]) ->
             inserts = gb_sets:new(),
             deletes = gb_sets:new()
         },
-    State1 = init_cool_down(Opts, State),
-    State2 = init_period(Opts, State1),
-    {ok, State2}.
+    State1 = init_period(Opts, State),
+    {ok, State1}.
 
 
 handle_call(ready, _From, State) ->
@@ -173,21 +168,15 @@ do_call(_Request, _From, State) ->
     {reply, Reply, State}.
 
 
-do_cast({hot, Keys}, #state{} = State) ->
-    mark_hot(Keys, State),
-    {noreply, State};
-
 %% 非周期性处理的数据, 直接放到inserts中, 并将deletes中的删除, 等到loop的时候进行flush
 do_cast({insert, Data}, #state{period = ?undefined, inserts = Buffer, deletes = Delete} = State)
         when is_list(Data)->
-    mark_hot(Data, State),
     Buffer1 = sets_add(Data, Buffer),
     Delete1 = sets_del(Data, Delete),
     {noreply, State#state{inserts = Buffer1, deletes = Delete1}};
 
 %% 周期性处理的, 放到period_insert
 do_cast({insert, Data}, #state{} = State) when is_list(Data) ->
-    mark_hot(Data, State),
     State1 = period_insert(Data, State),
     {noreply, State1};
 
@@ -220,9 +209,8 @@ do_cast({delete_many, Keys}, #state{deletes = Delete} = State) ->
     {noreply, State1#state{deletes = Delete1}};
 
 %% 删除表中所有数据
-do_cast(delete_all_objects, #state{period=Period, table = _Table}=State) ->
-    clear_hot_marker(State),
-    %% todo fg_sql_inf:truncate(Table),     %% 通过truncate来操作(truncate会锁表!!!!! 操作频繁可能引发问题)
+do_cast(delete_all_objects, #state{period = Period, table = Table}=State) ->
+    db_mysql_command:truncate(Table),     %% 通过truncate来操作(truncate会锁表!!!!! 操作频繁可能引发问题)
     NewPI = new_period_insert(Period),      %% 将period_insert重新初始化
     State1 = State#state{inserts = gb_sets:new(), period_insert = NewPI},
     {noreply, State1};
@@ -235,9 +223,7 @@ do_cast(Msg, #state{}=State) ->
 do_info(doloop, #state{loop = Loop} = State)->
     State1 = State#state{loop = Loop + 1},
     State2 = loop_period(State1),
-    Now = util_time:unixtime(), %% 时间需要取do_loop_flush之前的
     State3 = do_loop_flush(State2),
-    check_cool(Now, State3),
     {noreply, State3};
 
 %% ets控制器转交
@@ -251,32 +237,6 @@ do_info(Info, State)->
 %%% -------------------------------------------------------------
 %%%                     Local Function
 %%% -------------------------------------------------------------
-
-%% 初始化数据冷却相关信息
-init_cool_down(Opts, State) ->
-    case proplists:get_value(cool_down, Opts) of
-        ?undefined ->
-            State#state{hot_marker = ?undefined, cool_down = infinity};
-        infinity ->
-            State#state{hot_marker = ?undefined, cool_down = infinity};
-        ?true ->
-            init_cool_down_1(?CACHE_COOL_DOWN, State);
-        CoolDown when is_integer(CoolDown) ->
-            init_cool_down_1(CoolDown, State);
-        Error ->
-            erlang:error({invalid_cool_down, Error})
-    end.
-
-init_cool_down_1(CoolDown, #state{table = Table} = State) ->
-    CheckPoint = util_math:rand(0, ?COOL_DOWN_CHECK_LOOP - 1),
-    HotMarker = xf_sql_hot:start(Table),
-    HotMarker = ?undefined,
-    State#state{
-        hot_marker = HotMarker,
-        cool_down = CoolDown,
-        cool_down_check = CheckPoint
-    }.
-
 %% 初始化数据操作周期相关信息
 init_period(Opts, State) ->
     case proplists:get_value(period, Opts) of
@@ -311,42 +271,28 @@ flush_all_period(#state{inserts = Inserts, period = Period, period_insert = PI} 
 %% 将inserts和deletes中的数据落地
 do_flush(State) ->
     #state{
+        key       = Key,
         save_func = {M, F, A},
         inserts   = Inserts,
-        table     = _Table,
+        table     = Table,
         deletes   = Deletes
     } = State,
     InsertList = gb_sets:to_list(Inserts),
-    case M:F(A, InsertList) of
-        ?true ->
+    F = case
+        fun()
+    case erlang:apply(M, F, [Table, InsertList | A]) of
+        ok ->
             case gb_sets:to_list(Deletes) of
                 [] -> ok;
-                _Keys ->
-                    %% todo fg_sql_inf:kv_delete_many(Table, Keys)
-                    ok
+                KeyOfValueL ->
+                    db_mysql_command:delete_many(Table, Key, KeyOfValueL)
             end,
             State#state{inserts = gb_sets:new(), deletes = gb_sets:new()};
         _Err ->
             ?WARNING("~p items in ~p flush failed: ~p",
                 [length(InsertList), State#state.table, _Err]),
-            mark_hot(InsertList, State), % 出错数据要保持热度, 正常数据不需要
             State#state{inserts = Inserts}
     end.
-
-mark_hot(_, #state{hot_marker = ?undefined}) ->
-    ok;
-mark_hot(_, #state{cool_down = infinity}) ->
-    ok;
-mark_hot(Keys, #state{hot_marker = HotMarker}) ->
-    xf_sql_hot:raw_mark_hots(HotMarker, Keys).
-
-clear_hot_marker(#state{hot_marker = ?undefined}) ->
-    ok;
-clear_hot_marker(#state{cool_down = infinity}) ->
-    ok;
-clear_hot_marker(#state{hot_marker = _HotMarker}) ->
-    %% todo fg_sql_hot:clear_all(HotMarker).
-    ok.
 
 
 %% 将安周期数据插入到不同槽位中
@@ -393,28 +339,6 @@ do_loop_flush(State) ->
         0 ->
             do_flush(State)
     end.
-
-
-check_cool(_, #state{hot_marker = ?undefined}) ->
-    ok;
-check_cool(_, #state{cool_down = infinity}) ->
-    ok;
-check_cool(Now, State) ->
-    #state{
-        table = Table,
-        loop = Loop,
-        hot_marker = HotMarker,
-        cool_down = CoolDown,
-        cool_down_check = CheckPoint
-    } = State,
-    case Loop rem ?COOL_DOWN_CHECK_LOOP of
-        CheckPoint ->   %% 定时删除冷数据
-            CoolTime = Now - CoolDown,
-            xf_sql_hot:del_cools(Table, HotMarker, CoolTime);
-        _ ->
-            ok
-    end.
-
 
 %% Table对应ets表中的所有key
 all_keys(Table) ->

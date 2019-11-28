@@ -13,7 +13,7 @@
 -define(NULL_VAL, null_val).        %% 数据库返回空值
 
 %% kv data
--record(kv_data, {
+-record(kv_id_data, {
     id,     %% id
     data    %% 二进制数据 mediumblob, 16M
 }).

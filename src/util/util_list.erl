@@ -12,7 +12,9 @@
 %% API
 -export([
     shuffle/1,
-    shuffle2/2
+    shuffle2/2,
+
+    batch/4
 ]).
 
 
@@ -36,3 +38,15 @@ do_shuffle2([H | Rem], Interval, Index, LastRand, RetList) ->
             Rand = LastRand / Interval,
             do_shuffle2(Rem, Interval, Index + 1, LastRand, [{Rand, H} | RetList])
     end.
+
+%% 批量, 每个分段最大为Max, 对每个分段执行Func
+batch(Func, Acc0, Data, Max) when is_list(Data)->
+    batch(Func, Acc0, Data, Max, [], 0).
+
+batch(Func, Acc0, Remain, Max, AccData, N) when N >= Max ->
+    Acc1 = Func(AccData, Acc0),
+    batch(Func, Acc1, Remain, Max, [], 0);
+batch(Func, Acc0, []=_Remain, _Max, AccData, _) ->
+    Func(AccData, Acc0);
+batch(Func, Acc0, [H|T], Max, AccData, N) ->
+    batch(Func, Acc0, T, Max, [H|AccData], N+1).

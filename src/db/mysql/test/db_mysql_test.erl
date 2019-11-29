@@ -13,8 +13,6 @@
 -include("hrl_db.hrl").
 
 %% API
--export([]).
-
 -compile(export_all).
 -compile(nowarn_export_all).
 

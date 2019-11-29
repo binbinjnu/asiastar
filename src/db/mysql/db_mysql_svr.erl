@@ -34,12 +34,16 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record(state, {
+    %% 初始化传入的数据
     table          = ?undefined,    %% 表名
-    key            = ?undefined,    %% 主键字段名
-    fields         = ?undefined,    %% 对应fields, 如果是kv的, 用
+    rec_name       = ?undefined,    %% 记录名, 一般跟表名一样. kv的跟表名不同, 用 kv_id_data
+    key            = ?undefined,    %% 主键字段名. kv的用id
+    fields         = ?undefined,    %% 对应fields, 如果是kv的, 用 [id, data]
     transfer       = [],            %% 需要转换的element, term_to_bitstring和bitstring_to_term
+    compress       = 0,             %% 压缩等级, 一般用于 kv_id_data
+
+    %% 过程中产生的数据
     loop           = 0,             %%
-    save_func      = ?undefined,    %% 存储函数
     inserts        = ?undefined,    %% 需要插入的数据  gb_sets
     deletes        = ?undefined,    %% 需要删除的数据  gb_sets
     period         = ?undefined,    %% flush周期, 可以照着周期划分对应的槽位, 每次loop检测对应的rem值的槽位
@@ -85,18 +89,22 @@ start(Table, Opts) ->
 
 start_link(Table, Opts) ->
     Name = server_name(Table),
-    SOpts = [{fullsweep_after, 10}],    %% 分代gc, 最多经过多少代就可以强制进行充分垃圾回收
-    gen_server:start_link({local, Name}, ?MODULE, [Table, Opts], [{spawn_opt,SOpts}]).
+    SpawnOpts = [{fullsweep_after, 10}],    %% 分代gc, 最多经过多少代就可以强制进行充分垃圾回收
+    gen_server:start_link({local, Name}, ?MODULE, [Table, Opts], [{spawn_opt, SpawnOpts}]).
 
 
 init([Table, Opts]) ->
     erlang:process_flag(trap_exit, ?true),
-    {save_func, {M, F, A}} = lists:keyfind(save_func, 1, Opts),
     timer_svr:reg(self(), ?INSERT_INTERVAL),
     State =
         #state{
-            table = Table,
-            save_func = {M, F, A},
+            table          = Table,
+            rec_name       = proplists:get_value(rec_name, Opts, Table),
+            key            = proplists:get_value(key, Opts),
+            fields         = proplists:get_value(fields, Opts),
+            transfer       = proplists:get_value(transfer, Opts, []),
+            compress       = proplists:get_value(compress, Opts, 0),
+
             inserts = gb_sets:new(),
             deletes = gb_sets:new()
         },
@@ -271,16 +279,24 @@ flush_all_period(#state{inserts = Inserts, period = Period, period_insert = PI} 
 %% 将inserts和deletes中的数据落地
 do_flush(State) ->
     #state{
-        key       = Key,
-        save_func = {M, F, A},
-        inserts   = Inserts,
-        table     = Table,
-        deletes   = Deletes
+        rec_name    = RecName,
+        key         = Key,
+        transfer    = TransferL,
+        compress    = Compress,
+        fields      = Fields,
+        inserts     = Inserts,
+        table       = Table,
+        deletes     = Deletes
     } = State,
     InsertList = gb_sets:to_list(Inserts),
-    F = case
-        fun()
-    case erlang:apply(M, F, [Table, InsertList | A]) of
+    Res =
+        case RecName of
+            kv_id_data ->   %% id, data 结构
+                db_mysql_kv_api:kv_insert_from_ets(Table, InsertList, Compress);
+            _->
+                db_mysql_api:insert_from_ets(Table, InsertList, Fields, TransferL)
+        end,
+    case Res of
         ok ->
             case gb_sets:to_list(Deletes) of
                 [] -> ok;

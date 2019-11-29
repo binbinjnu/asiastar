@@ -111,40 +111,41 @@ create_table_index() ->
 %%% ------------------------------- insert -------------------------------
 %% 从ETS读取数据向数据库中插入, 传入Key的列表,
 %% 当数据量过大时自动分段, 全部成功返ok
-insert_from_ets(Table, Keys, Fields, Transfers) when is_list(Keys) ->
+%% Transfers :: [#record.field | _] 例如: [#index_t.index_k, #index_t.index_v]
+insert_from_ets(Table, Keys, Fields, TransferL) when is_list(Keys) ->
     KeyPos = ets:info(Table, keypos),
-    insert_from_ets_retry(Table, Keys, KeyPos, Fields, Transfers, ?MAX_RETRY_NUM, 0).
+    insert_from_ets_retry(Table, Keys, KeyPos, Fields, TransferL, ?MAX_RETRY_NUM, 0).
 
-insert_from_ets_retry(_Table, [], _KeyPos, _Fields, _Transfers, _MaxRetry, _N) ->
+insert_from_ets_retry(_Table, [], _KeyPos, _Fields, _TransferL, _MaxRetry, _N) ->
     ok;
-insert_from_ets_retry(Table, Keys, KeyPos, Fields, Transfers, MaxRetry, N) ->
+insert_from_ets_retry(Table, Keys, KeyPos, Fields, TransferL, MaxRetry, N) ->
     F = fun(IDs, Success) ->
-            Records = find_in_ets(Table, Transfers, IDs),
+            Records = find_in_ets(Table, TransferL, IDs),
             Success andalso db_mysql_command:insert(Table, Fields, Records) =:= ok
         end,
     case util_list:batch(F, ?true, Keys, ?MAX_INSERT_NUM) of
         ?true ->
             ok;
         _Error when N < MaxRetry ->
-            insert_from_ets_retry(Table, Keys, KeyPos, Fields, Transfers, MaxRetry, N + 1);
+            insert_from_ets_retry(Table, Keys, KeyPos, Fields, TransferL, MaxRetry, N + 1);
         Error ->
             Error
     end.
 
-find_in_ets(Table, Transfers, IDs) ->
-    find_in_ets(Table, Transfers, IDs, []).
+find_in_ets(Table, TransferL, IDs) ->
+    find_in_ets(Table, TransferL, IDs, []).
 
-find_in_ets(_Table, _Transfers, [], AccData) ->
+find_in_ets(_Table, _TransferL, [], AccData) ->
     AccData;
-find_in_ets(Table, Transfers, [ID|T], AccData) ->
+find_in_ets(Table, TransferL, [ID|T], AccData) ->
     case ets:lookup(Table, ID) of
         [Data] ->
             %% todo 需要把transfers中对应的值进行term_to_bitstring转换
             Data1 = [Data | AccData],
-            find_in_ets(Table, Transfers, T, Data1);
+            find_in_ets(Table, TransferL, T, Data1);
         _E ->
             ?WARNING("Error data got in ets ~p for id ~w, got: ~p", [Table, ID, _E]),
-            find_in_ets(Table, Transfers, T, AccData)
+            find_in_ets(Table, TransferL, T, AccData)
     end.
 
 

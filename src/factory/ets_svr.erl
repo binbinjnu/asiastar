@@ -26,7 +26,8 @@
 %% 创建ets, 并托管给调用进程
 new(Name, Args) ->
     Allows =
-        [public,
+        [
+            public,
             protected,
             private,
             set,
@@ -36,8 +37,8 @@ new(Name, Args) ->
             % named_table, % 这个要强制
             keypos,
             write_concurrency,
-            read_concurrency,
-            compressed],
+            read_concurrency
+        ],
     Args1 = util:filter_opts(Args, Allows),
     gen_server:call(?MODULE, {new, Name, [named_table | Args1]}).
 
@@ -47,14 +48,14 @@ hold_new(Name, Args) ->
     Denies = [protected, private],
     util:deny_opts(Args, Denies),
     Allows =
-        [set,
+        [   set,
             ordered_set,
             bag,
             duplicate_bag,
             keypos,
             write_concurrency,
-            read_concurrency,
-            compressed],
+            read_concurrency
+        ],
     Args1 = util:filter_opts(Args, Allows),
     Args2 = [public, named_table | Args1],
     gen_server:call(?MODULE, {hold_new, Name, Args2}).

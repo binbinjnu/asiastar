@@ -5,17 +5,26 @@
 %%%     数据库相关头文件, 数据库字段名不要用mysql预留字段!!!!! 如果不好取名, 可加前缀或后缀
 %%%     尽量避免 key, id 等无意义命名
 %%% @end
-%%% Created : 15. 11月 2019 20:23
+%%% Created : 15. 11月 2019 20:23d
 %%%-------------------------------------------------------------------
 -author("Administrator").
 
 -define(POOL_NAME, pool).       %%
 -define(NULL_VAL, null_val).        %% 数据库返回空值
 
+
 %% kv data
 -record(kv_id_data, {
     id,     %% id
     data    %% 二进制数据 mediumblob, 16M
+}).
+
+%% 测试record
+-record(test_t, {
+    t_id = 0,
+    t_str = <<"">>,
+    t_tuple = {a, b, c},
+    t_list = [a, b, c]
 }).
 
 %%% 普通表名接后缀 _t

@@ -22,6 +22,11 @@
     stop_mysql/0
 ]).
 
+-export([
+    open/2,
+    open_kv/2
+]).
+
 start_mysql() ->
     ?NOTICE("Start mysql!"),
     %% 判断是否有DB, 没有的话建立数据库
@@ -81,6 +86,13 @@ check_mysql() ->
     mysql_poolboy:add_pool(?POOL_NAME, PoolOpts, MySqlOpts),
     ok.
 
+make_opts() ->
+    [Host, Port, User, Passwd, DB, ConnNum] = config:get(mysql),
+    PoolOpts  = [{size, ConnNum}, {max_overflow, 2 * ConnNum}],
+    MySqlOpts = [{host, Host}, {port, Port}, {user, User}, {password, Passwd}, {database, DB}],
+    {PoolOpts, MySqlOpts}.
+
+
 %% 关闭mysql连接池
 stop_mysql() ->
     ok = supervisor:terminate_child(mysql_poolboy_sup, ?POOL_NAME),
@@ -88,8 +100,59 @@ stop_mysql() ->
     %% todo 需要加入服务器状态
     ok.
 
-make_opts() ->
-    [Host, Port, User, Passwd, DB, ConnNum] = config:get(mysql),
-    PoolOpts  = [{size, ConnNum}, {max_overflow, 2 * ConnNum}],
-    MySqlOpts = [{host, Host}, {port, Port}, {user, User}, {password, Passwd}, {database, DB}],
-    {PoolOpts, MySqlOpts}.
+
+
+%% 打开一个数据库表, 如果不存在则新建
+%% Opts为Proplists, 可用的参数有:
+%% [
+%%  %% ets 初始化的一些参数, ets_svr中用到
+%%  %% 比如:
+%%      set | ordered_set | bag | duplicate_bag
+%%      public | private | protected
+%%      write_concurrency
+%%      read_concurrency
+%%      {keypos, V}
+%%
+%%  %% 数据存储等需要用到的参数, db_mysql_svr和db_mysql_kv_api中用到
+%%  %% 例子: 对应hrl_db中的记录test_t
+%%      {rec_name, test_t}          对应的记录名, 一般跟表名一样. kv的跟表名不同, 用 kv_id_data
+%%      {key, test_id}              主键字段名. kv的用id
+%%      {fields, [t_id, t_str, t_tuple, t_list]}
+%%                                  对应fields, 一般是RecordName对应的 record_info(fields, rec_name)
+%%                                  注意, record_info(fields, rec_name) 中rec_name必须是显式的atom, 不能用参数
+%%                                  如果是kv_id_data的, 用 [id, data]
+%%      {transfer, [#test_t.t_tuple, #test_t.t_list]}
+%%                                  需要转换的element key, term_to_bitstring和bitstring_to_term
+%%                                  会将对应的字段进行转换
+%%      {compress, Levels}          压缩等级, 一般用于 kv_id_data
+%%
+%%  %% 创建数据表用, 一般用于open_kv中创建 {id, data, gmt_modified, gmt_create} 结构的表
+%%      {key_format, Format}        int | uint | {uint, N} | {int, N} | varbinary | {varbinary, N}
+%%      index_modified              表示是否对修改时间进行索引, 没有改参数表示 false
+%% ]
+open(Table, Opts) ->
+    new_ets(Table, Opts),
+    Opts1 = [{recname, Table} | Opts],
+    {ok, _} = db_mysql_svr:start(Table, Opts1),
+    ok.
+
+open_kv(Table, Opts) ->
+    new_ets(Table, Opts),
+    Opts1 =
+        [
+            {recname, kv_id_data},
+            {key, id},
+            {fields, [id, data]} | Opts
+        ],
+    {ok, _} = db_mysql_svr:start(Table, Opts1),
+    %% kv的表在此自动创建
+    db_mysql_kv_api:ensure_kv_table(Table, Opts1),
+    ok.
+
+new_ets(Table, Opts) ->
+    case proplists:get_bool(protected, Opts) orelse proplists:get_bool(private, Opts) of
+        ?true ->
+            ets_svr:new(Table, Opts);
+        _ ->
+            ets_svr:hold_new(Table, Opts)
+    end.

@@ -1,4 +1,5 @@
--name asiastar@127.0.0.1
+-name asiastar_${SERVER_ID}@127.0.0.1
+-asiastar node_id ${NODE_ID}
 +P 500000
 +K true
 +Q 131072
@@ -7,3 +8,4 @@
 +scl false
 +sub true
 +t 10000000
+

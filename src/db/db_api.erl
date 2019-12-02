@@ -10,7 +10,10 @@
 -author("Administrator").
 
 %% API
--export([]).
+-export([
+    mysql_boot/0,
+    ets_boot/0
+]).
 
 mysql_boot() ->
     ok.

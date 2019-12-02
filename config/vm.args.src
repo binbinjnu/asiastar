@@ -1,5 +1,5 @@
--name asiastar_${SERVER_ID}@127.0.0.1
--asiastar node_id ${NODE_ID}
+-name asiastar_${NODE_ID}@${IP}
+-setcookie asiastar_cookie
 +P 500000
 +K true
 +Q 131072

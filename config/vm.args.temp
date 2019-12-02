@@ -1,4 +1,5 @@
--name asiastar_${SERVER_ID}@${SERVER_IP}
+-name asiastar_${NODE_ID}@${IP}
+-setcookie asiastar_cookie
 +P 500000       %% 系统同时存在的进程的最大数目
 +K true         %% 启用模拟器内核轮询功能
 +Q 131072       %% 设置系统同时存在的端口的最大数目, 包括net, file等

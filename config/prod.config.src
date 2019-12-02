@@ -1,5 +1,6 @@
 [
     {asiastar, [
+        {node_id, ${NODE_ID}},
         {dev_mode, false},            % dev模式
         {port, 10001},
         {net_proto_debug, 1},       % 是否开启网络协议输出 0:否, 1:全部, 其它:玩家id取余该值=1的
@@ -9,11 +10,11 @@
     ]},
 
     {sasl, [
-        {sasl_error_logger, {file, "./logs/sasl/sasl.log"}}
+        {sasl_error_logger, {file, "./app_logs/${NODE_ID}/sasl.log"}}
     ]},
 
     {lager, [
-        {log_root, "./logs"},
+        {log_root, "./app_logs/${NODE_ID}"},
         {error_logger_redirect, true},
         {async_threshold, 2000},
         {handlers, [
@@ -64,7 +65,7 @@
                 {count, 10}
             ]}
         ]},
-        {crash_log, "../logs/crash.log"},
+        {crash_log, "../app_logs/${NODE_ID}/crash.log"},
         {crash_log_msg_size, 10240},
         {crash_log_size, 104857600},
         {crash_log_date, "$D0"},

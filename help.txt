@@ -1,0 +1,5 @@
+usage: gctl.sh start | stop | restart | pid |
+
+start node_id : 启动对应node_id的服
+stop  node_id : 关闭对应node_id的服
+pid   node_id : 打印对应node_id的进程pid

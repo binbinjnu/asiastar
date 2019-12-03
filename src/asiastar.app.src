@@ -5,12 +5,14 @@
   {mod, {asiastar_app, []}},
   {applications,
    [kernel,
+    sasl,
     stdlib,
     lager,
     ranch,
     mysql_poolboy,
     erlcron
    ]},
+  {releases, []}
   {env,[]},
   {modules, []},
 

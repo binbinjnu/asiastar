@@ -1,5 +1,14 @@
 usage: gctl.sh start | stop | restart | pid |
 
-start node_id : 启动对应node_id的服
-stop  node_id : 关闭对应node_id的服
-pid   node_id : 打印对应node_id的进程pid
+在节点运行着的情况下
+unpack      [VERSION]                   : 解压releases文件夹下面的<relname>-<VERSION>.tar.gz包
+install     [VERSION] <--no-permanent>  : 安装, 如果对应的版本没解压, 则解压并安装(需要relup)
+uninstall   [VERSION]                   : 卸载对应版本, 需要该版本没有在运行中
+upgrade     [VERSION] <--no-permanent>  : 升级版本, 如果对应的版本没解压, 则解压并升级(需要relup)
+downgrade   [VERSION] <--no-permanent>  : 降级版本(需要relup)
+
+正常使用
+start   [NODE_ID] : 启动对应NODE_ID的服
+stop    [NODE_ID] : 关闭对应NODE_ID的服
+pid     [NODE_ID] : 打印对应NODE_ID的进程pid
+

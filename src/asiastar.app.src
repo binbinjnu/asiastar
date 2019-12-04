@@ -1,6 +1,6 @@
 {application, asiastar,
  [{description, "An OTP application"},
-  {vsn, "0.1.0"},
+  {vsn, "0.1.1"},
   {registered, []},
   {mod, {asiastar_app, []}},
   {applications,
@@ -12,7 +12,7 @@
     mysql_poolboy,
     erlcron
    ]},
-  {releases, []}
+  {releases, []},
   {env,[]},
   {modules, []},
 

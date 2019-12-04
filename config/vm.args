@@ -1,0 +1,11 @@
+-name asiastar_1@192.168.11.116
+-setcookie asiastar_cookie
++P 500000
++K true
++Q 131072
++e 14000
++zdbbl 8192
++scl false
++sub true
++t 10000000
+

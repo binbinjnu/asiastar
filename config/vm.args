@@ -1,4 +1,4 @@
--name asiastar_1@192.168.11.116
+-name asiastar_1@127.0.0.1
 -setcookie asiastar_cookie
 +P 500000
 +K true

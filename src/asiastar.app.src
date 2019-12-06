@@ -1,6 +1,6 @@
 {application, asiastar,
  [{description, "An OTP application"},
-  {vsn, "0.1.1"},
+  {vsn, "0.1.3"},
   {registered, []},
   {mod, {asiastar_app, []}},
   {applications,

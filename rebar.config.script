@@ -1,4 +1,4 @@
-main(CONFIG) ->
+%%main(CONFIG) ->
     CONFIG_1 =
         case lists:keyfind(add_overrides, 1, CONFIG) of
             false -> CONFIG;

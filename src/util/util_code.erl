@@ -16,14 +16,19 @@
     term_to_bitstring/1,
     bitstring_to_term/1,
     md5/1,
+    md5/2,
     bool2int/1,
-    int2bool/1
+    int2bool/1,
+
+    to_binary/1
 ]).
 
 -export([
     password/1,
     reg_name/1
 ]).
+
+-compile(export_all).
 
 -define(PASSWORD_KEY, "YXNpYXN0YXJrZXk=").  % asiastarkey的base64编码
 %% 密码
@@ -71,3 +76,37 @@ bool2int(B) ->
 %% int转bool
 int2bool(I) ->
     I > 0.
+
+md5(Data, Key) ->
+    List = to_sort_list(Data),
+    ParamForSign = to_form(List ++ [{key, Key}]),
+    Sign = md5(ParamForSign),
+    string:to_upper(Sign).
+
+to_sort_list(Map) when is_map(Map)-> lists:sort(maps:to_list(Map));
+to_sort_list(List) -> lists:sort(List).
+
+to_form(L) ->
+    L1 = [<<(util_code:to_binary(K))/binary, "=", (util_code:to_binary(V))/binary>> || {K, V} <- L],
+    join(L1).
+
+join([H|T]) ->
+    TBin = << <<"&", E/binary>> || E <- T >>,
+    <<H/binary, TBin/binary>>;
+join([]) ->
+    <<>>.
+
+to_binary(X) when is_binary(X) ->
+    X;
+to_binary(X) when is_list(X) ->
+    erlang:list_to_binary(X);
+to_binary(X) when is_integer(X) ->
+    erlang:integer_to_binary(X);
+to_binary(X) when is_float(X) ->
+    iolist_to_binary(io_lib:format("~w", [X]));
+to_binary(X) when is_atom(X) ->
+    erlang:atom_to_binary(X, latin1);
+to_binary(_) ->
+    <<"invalid_to_binary">>.
+
+%%[{amount, "100.00"}, {amount_true, "100.00"}, {appid, "1082039"}, {callbacks, "CODE_SUCCESS"}, {error_url, "123456"}, {out_trade_no, "68250020191209173509"}, {out_uid, "123457"}, {pay_type, "alipay"}, {success_url, "123456"}]

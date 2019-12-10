@@ -1,12 +1,14 @@
-set number                                                                                                                                                                                              
+set number
 syntax on
 set showmode
 set showcmd
-set encoding=utf-8  
+set encoding=utf-8
 set t_Co=256
 filetype indent on
 set expandtab
-set softtabstop=2
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
 set textwidth=80
 set wrap
 set linebreak
@@ -17,6 +19,4 @@ set hlsearch
 set noerrorbells
 set laststatus=2
 
-set ts=4
-set expandtab
-set autoindent
+set pastetoggle=<F9>

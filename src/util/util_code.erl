@@ -16,7 +16,7 @@
     term_to_bitstring/1,
     bitstring_to_term/1,
     md5/1,
-    md5/2,
+    param_md5/2,
     bool2int/1,
     int2bool/1,
 
@@ -62,10 +62,6 @@ term_to_bitstring(Term) ->
     erlang:list_to_bitstring(io_lib:format("~999999p", [Term])).
 
 
-%% 转换成HEX格式的md5
-md5(S) ->
-    lists:flatten([io_lib:format("~2.16.0b",[N]) || N <- binary_to_list(erlang:md5(S))]).
-
 %% bool型转int
 bool2int(B) ->
     case B of
@@ -77,24 +73,34 @@ bool2int(B) ->
 int2bool(I) ->
     I > 0.
 
-md5(Data, Key) ->
+
+%% 转换成HEX格式的md5
+md5(S) ->
+    lists:flatten([io_lib:format("~2.16.0b",[N]) || N <- binary_to_list(erlang:md5(S))]).
+
+%% 将[{k, v}..] || #{k => v ..} 格式的按ASCII码从小到大的顺序排序再加上Key
+%% 组合成k1=v1&k2=v2...&key=Key
+%% md5
+%% 转成大写
+param_md5(Data, Key) ->
     List = to_sort_list(Data),
-    ParamForSign = to_form(List ++ [{key, Key}]),
+    ParamForSign = to_url_form(List ++ [{key, Key}]),
     Sign = md5(ParamForSign),
     string:to_upper(Sign).
 
 to_sort_list(Map) when is_map(Map)-> lists:sort(maps:to_list(Map));
 to_sort_list(List) -> lists:sort(List).
 
-to_form(L) ->
+to_url_form(L) ->
     L1 = [<<(util_code:to_binary(K))/binary, "=", (util_code:to_binary(V))/binary>> || {K, V} <- L],
-    join(L1).
+    url_join(L1).
 
-join([H|T]) ->
+url_join([H | T]) ->
     TBin = << <<"&", E/binary>> || E <- T >>,
     <<H/binary, TBin/binary>>;
-join([]) ->
+url_join([]) ->
     <<>>.
+
 
 to_binary(X) when is_binary(X) ->
     X;
@@ -108,5 +114,3 @@ to_binary(X) when is_atom(X) ->
     erlang:atom_to_binary(X, latin1);
 to_binary(_) ->
     <<"invalid_to_binary">>.
-
-%%[{amount, "100.00"}, {amount_true, "100.00"}, {appid, "1082039"}, {callbacks, "CODE_SUCCESS"}, {error_url, "123456"}, {out_trade_no, "68250020191209173509"}, {out_uid, "123457"}, {pay_type, "alipay"}, {success_url, "123456"}]

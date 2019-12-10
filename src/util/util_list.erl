@@ -21,7 +21,11 @@
     
     index_of/2,
     
-    set_list_nth/3
+    set_list_nth/3,
+
+    merge_kv/1,
+    merge_kv/2,
+    keyadd/3
 
 ]).
 
@@ -88,3 +92,32 @@ set_list_nth(N, Item, [H|T]) when N > 1 ->
 set_list_nth(_, Item, [_|T]) ->
     [Item|T].
 
+
+%% 对相同的key的值进行累加
+merge_kv(KVList) ->
+    merge_kv1(lists:sort(KVList)).
+
+merge_kv1([{K, V1}, {K, V2}|T]) ->
+    merge_kv1([{K, V1 + V2} | T]);
+merge_kv1([H|T]) ->
+    [H | merge_kv1(T)];
+merge_kv1([]) ->
+    [].
+
+%% 对2个kv列表相同的key的值进行累加
+merge_kv(KVList1, KVList2) ->
+    F = fun({K, V}, AccIn) ->
+            keyadd(K, V, AccIn)
+        end,
+    lists:foldl(F, KVList2, KVList1).
+
+keyadd(K, V, L) ->
+    keyadd(K, 1, V, L).
+
+keyadd(K, N, V, L) ->
+    case lists:keyfind(K, N, L) of
+        {K, OldV} ->
+            lists:keystore(K, N, L, {K, V + OldV});
+        _ ->
+            [{K, V} | L]
+    end.

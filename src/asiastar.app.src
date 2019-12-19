@@ -10,7 +10,8 @@
     lager,
     ranch,
     mysql_poolboy,
-    erlcron
+    erlcron,
+    jsone
    ]},
   {releases, []},
   {env,[]},

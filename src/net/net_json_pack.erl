@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 30. 10月 2019 10:51
 %%%-------------------------------------------------------------------
--module(net_pack).
+-module(net_json_pack).
 -author("Administrator").
 
 -include("hrl_common.hrl").
@@ -31,26 +31,21 @@ pack(Msgs) ->
             []
     end.
 
+%% [{MsgID, #{} or []} | _]
 do_pack(Msgs) when is_list(Msgs) ->
     [do_pack(Msg) || Msg <- Msgs];
 do_pack(Msg) when is_binary(Msg)->
     Msg;
 do_pack({}) ->
     [];
-do_pack(Msg) when is_tuple(Msg)->
-    MsgName = erlang:element(1, Msg),
-    case data_proto:get(MsgName) of
-        {MsgID, MsgPb} ->
-            try
-                Content = MsgPb:encode_msg(Msg),
-                Len = erlang:iolist_size(Content) + 2,
-                [<<Len:16, MsgID:16>>, Content]
-            catch _:_ ->
-                ?ERROR("Invalid msg ~p",[Msg]),
-                []
-            end;
-        _ ->
-            []
+do_pack({MsgID, Msg}) ->
+    try
+        Content = jsone:encode(Msg),
+        Len = erlang:iolist_size(Content) + 2,
+        [<<Len:16, MsgID:16>>, Content]
+    catch _:_ ->
+        ?ERROR("Invalid MsgID:~w, Msg:~w",[MsgID, Msg]),
+        []
     end;
 do_pack(?undefined) ->
     [];
@@ -64,24 +59,12 @@ unpacks(Bin) ->
 unpacks(<<>>, Acc) ->
     lists:reverse(Acc);
 unpacks(<<2:16, MsgID:16, Res/binary>>, Acc) ->
-    try decode(MsgID, <<>>) of
-        error ->
-            unpacks(Res, Acc);
-        Cont ->
-            unpacks(Res, [{MsgID, Cont}|Acc])
-    catch
-        _:_ ->
-            ?WARNING("Decode error ~w: ~w", [MsgID, <<>>]),
-            unpacks(Res, Acc)
-    end;
+    unpacks(Res, [{MsgID, #{}}|Acc]);
 unpacks(<<Len:16, Bin:Len/binary, Res/binary>>, Acc) ->
     <<MsgID:16, Bin1/binary>> = Bin,
-    try decode(MsgID, Bin1) of
-        error ->
-            unpacks(Res, Acc);
-        Cont ->
-            % ?TRAC(Cont),
-            unpacks(Res, [{MsgID, Cont}|Acc])
+    try
+        Cont = jsone:decode(Bin1),
+        unpacks(Res, [{MsgID, Cont}|Acc])
     catch
         _:_ ->
             ?WARNING("Decode error ~w: ~w", [MsgID, Bin1]),
@@ -91,14 +74,6 @@ unpacks(_E, Acc) ->
     ?WARNING("msg err ~p", [_E]),
     lists:reverse(Acc).
 
-
-decode(MsgID, Bin) -> % 新协议
-    case data_proto:get_c2s(MsgID) of
-        {MsgName, MsgPb} ->
-            MsgPb:decode_msg(Bin, MsgName);
-        _ ->
-            error
-    end.
 
 %% 原生的pb性能约高 50%
 

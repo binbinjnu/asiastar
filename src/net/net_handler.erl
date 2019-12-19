@@ -86,8 +86,9 @@ handle(Bin, #handler_state{debug_pid = Pid} = HState) ->
         ?true -> Pid ! {recv, Bin};
         _ -> ok
     end,
-    Packets = net_pack:unpacks(Bin),
-%%    ?NOTICE("Packets:~w", [Packets]),
+    Packets = net_json_pack:unpacks(Bin),
+%%    Packets = net_protobuf_pack:unpacks(Bin),
+    ?NOTICE("Packets:~w", [Packets]),
     HState1 = handle_1(Packets, HState),
     HState1.
 
@@ -124,7 +125,8 @@ handle_local(MsgID, Content, HState) ->
 
 
 pack(Msg) ->
-    net_pack:pack(Msg).
+    net_json_pack:pack(Msg).
+%%    net_protobuf_pack:pack(Msg).
 
 
 handle_evt(Req, HState) ->
